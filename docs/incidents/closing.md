@@ -15,12 +15,6 @@ known about the cause of the close:
 
 **Self-healed** is not a claim the fault is fixed. It says only that ARGUS did not act.
 
-![The validate card on a self-healed incident, stating that no ARGUS fix is linked to the
-close](../assets/images/20-stage-validate.png)
-
-*The validate card on a self-healed close. It states what is known — no fix of ARGUS's is
-linked — rather than implying the fault was resolved by something it did.*
-
 ## Dismissed
 
 Closed by a person's decision, without validating an outcome. Use it for a fault that is

@@ -131,6 +131,7 @@ nav:
       - administration/index.md
       - Clusters: administration/clusters.md
       - Users and roles: administration/users-and-roles.md
+      - Single sign-on: administration/single-sign-on.md
       - AI providers: administration/ai-providers.md
       - Model pricing and spend: administration/spend.md
       - Git repositories: administration/repositories.md

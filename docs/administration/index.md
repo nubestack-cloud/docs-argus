@@ -5,6 +5,8 @@ to, and what it keeps.
 
 - [Clusters](clusters.md) — enrolling, accepting, states, and removing a cluster.
 - [Users and roles](users-and-roles.md) — accounts, roles and the scope a grant applies to.
+- [Single sign-on](single-sign-on.md) — sign in with your own identity provider, and map its
+  groups to ARGUS roles.
 - [AI providers](ai-providers.md) — configuring providers and switching between them.
 - [Model pricing and spend](spend.md) — making cost visible and bounding it.
 - [Git repositories](repositories.md) — where ARGUS may propose pull requests.
