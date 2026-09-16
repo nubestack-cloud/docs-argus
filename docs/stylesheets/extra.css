@@ -1,0 +1,45 @@
+/* ARGUS docs — small, deliberate overrides on top of mkdocs-material. */
+
+:root {
+  --argus-low: #1f9d55;
+  --argus-medium: #c98a00;
+  --argus-high: #d9534f;
+  --argus-critical: #8b1a1a;
+}
+
+/* Severity and risk badges. Usage in Markdown:
+   <span class="sev sev-high">High</span> */
+.sev {
+  display: inline-block;
+  padding: 0.05rem 0.45rem;
+  border-radius: 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  border: 1px solid currentcolor;
+}
+.sev-low      { color: var(--argus-low); }
+.sev-medium   { color: var(--argus-medium); }
+.sev-high     { color: var(--argus-high); }
+.sev-critical { color: var(--argus-critical); }
+
+/* Screenshots: keep them readable but visually separated from body text. */
+.md-typeset img {
+  border-radius: 6px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* Figure captions rendered as the italic line directly under an image. */
+.md-typeset img + em,
+.md-typeset figure figcaption {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--md-default-fg-color--light);
+}
+
+/* Wide reference tables scroll instead of overflowing the page. */
+.md-typeset__table { width: 100%; }
+.md-typeset table:not([class]) { font-size: 0.76rem; }

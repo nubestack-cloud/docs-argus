@@ -1,0 +1,150 @@
+site_name: NubeStack ARGUS
+site_description: >-
+  Product documentation for NubeStack ARGUS — AI-assisted incident detection,
+  investigation and remediation for Kubernetes fleets.
+site_author: NubeStack
+site_url: https://argus.nubestack.com/
+copyright: Copyright &copy; NubeStack. All rights reserved.
+
+theme:
+  name: material
+  language: en
+  logo: assets/images/argus-mark.svg
+  favicon: assets/images/argus-favicon.svg
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Follow system theme
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - navigation.indexes
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - content.tooltips
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+plugins:
+  - search
+
+extra:
+  generator: false
+
+nav:
+  - Home: index.md
+  - Overview:
+      - overview/index.md
+      - What ARGUS is: overview/what-is-argus.md
+      - Who it is for: overview/who-its-for.md
+      - How it works: overview/how-it-works.md
+      - Architecture: overview/architecture.md
+      - Security model: overview/security-model.md
+  - Getting started:
+      - getting-started/index.md
+      - Requirements: getting-started/requirements.md
+      - Install the hub: getting-started/install.md
+      - First sign-in: getting-started/first-sign-in.md
+      - Configure analysis: getting-started/configure-analysis.md
+      - Connect a cluster: getting-started/connect-a-cluster.md
+      - Your first incident: getting-started/first-incident.md
+  - Incidents:
+      - incidents/index.md
+      - The incident lifecycle: incidents/lifecycle.md
+      - Reading an incident: incidents/reading-an-incident.md
+      - What ARGUS detects: incidents/detection.md
+      - Investigation: incidents/investigation.md
+      - Closing an incident: incidents/closing.md
+      - Tolerations: incidents/tolerations.md
+  - Fixing things:
+      - remediation/index.md
+      - Resolution routes: remediation/routes.md
+      - Approving a fix: remediation/approvals.md
+      - Pull requests: remediation/pull-requests.md
+      - In-place changes: remediation/in-place-changes.md
+      - Validation: remediation/validation.md
+      - Rolling back: remediation/rollback.md
+  - Automation:
+      - automation/index.md
+      - Automatic investigation: automation/automatic-investigation.md
+      - Unattended execution: automation/unattended-execution.md
+      - Guardrails: automation/guardrails.md
+      - Maintenance and freeze windows: automation/windows.md
+      - Notifications: automation/notifications.md
+  - Administration:
+      - administration/index.md
+      - Clusters: administration/clusters.md
+      - Users and roles: administration/users-and-roles.md
+      - AI providers: administration/ai-providers.md
+      - Model pricing and spend: administration/spend.md
+      - Git repositories: administration/repositories.md
+      - Detector settings: administration/detectors.md
+      - Data retention: administration/retention.md
+      - Insights: administration/insights.md
+      - Audit log: administration/audit-log.md
+  - Reference:
+      - reference/index.md
+      - Incident states: reference/incident-states.md
+      - Remediation actions: reference/remediation-actions.md
+      - Detectors and rules: reference/detectors.md
+      - Roles and capabilities: reference/roles.md
+      - Cluster states: reference/cluster-states.md
+      - Network requirements: reference/network-requirements.md
+      - Glossary: reference/glossary.md
+  - Troubleshooting: troubleshooting.md
