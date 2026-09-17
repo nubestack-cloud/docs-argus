@@ -42,6 +42,32 @@ which namespaces.*
 This is where to check whether an agent can actually do what you expect. If remediation
 looks unavailable on an incident, the answer is usually here.
 
+## Remediation authority
+
+The remediation card on a cluster's page answers one question: **may this agent change
+anything here, and where.** Check it before relying on an approval being carried out.
+
+What it shows is what the agent **discovered** by asking its own API server, not what
+somebody configured. That distinction matters when an approval fails: configuration can say
+one thing and the cluster another.
+
+It distinguishes three states rather than two, and collapsing any two would mislead:
+
+| State | Meaning |
+|---|---|
+| Not reported | The agent predates the check. Unknown |
+| Not answered | The agent asked and got no answer. Also unknown — **not** a denial |
+| Answered | A real, per-action answer |
+
+"Nobody could ask" is deliberately not rendered as "remediation unavailable". Telling an
+approver a cluster cannot act when the question merely went unanswered is the failure that
+distinction exists to prevent.
+
+The card is **read-only, and cannot be otherwise**: write access is Kubernetes RBAC in the
+target cluster, and the hub cannot grant an agent permissions. Changing it means upgrading
+the agent — see
+[Whether the agent may change anything](../getting-started/connect-a-cluster.md).
+
 ## Renaming
 
 A cluster's display name can be changed at any time. It is a label for people and does not

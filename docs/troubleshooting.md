@@ -61,8 +61,10 @@ is permitted to read.
 ## Remediation is unavailable on an incident
 
 The agent for that cluster is read-only, or the object is outside the namespaces the agent
-may write in. Both are shown on the cluster detail page. Enabling remediation is an agent
-install-time setting.
+may write in. Both are shown on the cluster's page. There is no setting in the product that
+changes this — it is granted when the agent is installed or upgraded, to named namespaces or
+to the whole cluster. See
+[Whether the agent may change anything](getting-started/connect-a-cluster.md).
 
 ## A dry-run fails
 

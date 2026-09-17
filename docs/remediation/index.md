@@ -15,6 +15,7 @@ confirms the change worked.
 - [Rolling back](rollback.md) — undoing a change ARGUS applied.
 
 !!! note "Nothing here happens on a fresh install"
-    Agents install read-only. Until you enable remediation for a cluster and name the
-    namespaces it may write in, ARGUS can propose fixes and open pull requests but cannot
-    change a cluster.
+    Agents install read-only. Until you enable remediation for a cluster, ARGUS can propose
+    fixes and open pull requests but cannot change a cluster. That is an install-time
+    decision rather than a setting in the product — see
+    [Whether the agent may change anything](../getting-started/connect-a-cluster.md).

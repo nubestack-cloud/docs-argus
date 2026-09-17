@@ -55,6 +55,13 @@ None of these gate a human. A person with the right capability can approve a fix
 time, in any window, with any breaker open. These controls exist to bound what happens
 without a person, not to stand between an operator and a decision they have made.
 
+So if what you want is **"ARGUS must not change this cluster at all, including changes
+someone approves"**, none of the controls on this page does that. The only thing that does
+is the agent's own write access, which is Kubernetes RBAC in that cluster and is removed by
+upgrading the agent there — see
+[Whether the agent may change anything](../getting-started/connect-a-cluster.md). It holds
+even if the hub is compromised, which no setting in the product could claim.
+
 ## See also
 
 - [Unattended execution](unattended-execution.md)

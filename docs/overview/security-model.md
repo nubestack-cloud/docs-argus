@@ -50,8 +50,12 @@ wrong value in an environment variable. There is no setting that turns redaction
 
 Agents install read-only. Detection and investigation need nothing more.
 
-Remediation is enabled per cluster, at install time, and scoped to an explicit list of
-namespaces. Beyond that scope the agent cannot write at all. Within it:
+Remediation is enabled per cluster **when the agent is installed or upgraded**, never from
+the product: the hub cannot grant an agent permissions, so write access is Kubernetes RBAC
+in the target cluster. It is scoped either to named namespaces or, deliberately opt-in, to
+the whole cluster — see
+[Whether the agent may change anything](../getting-started/connect-a-cluster.md). Beyond
+that scope the agent cannot write at all. Within it:
 
 - only a fixed set of typed actions can be requested, each with a known shape
 - each action is signed by the hub and bound to the object version it was built from

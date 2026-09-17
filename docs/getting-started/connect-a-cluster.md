@@ -49,14 +49,87 @@ out clusters needing attention.*
 Findings normally start arriving within a minute or two. A healthy cluster with nothing
 wrong produces no incidents, which is the correct outcome rather than a sign of a problem.
 
-## Enabling remediation
+## Whether the agent may change anything
 
-Agents install read-only, and that is enough for detection and investigation. To let ARGUS
-execute approved fixes in a cluster, reinstall or upgrade the agent with remediation
-enabled and an explicit list of namespaces it may write in.
+**Agents install read-only.** Detection and investigation need nothing more, and a cluster
+connected today cannot be modified by ARGUS at all until you decide otherwise.
 
-An empty namespace list means the agent can write nowhere. Cluster-wide write scope is
-available and should be a deliberate decision rather than a default.
+!!! warning "This is an install-time decision, not a setting in the product"
+    There is no switch in **Settings** that grants or removes an agent's write access, and
+    there is deliberately no way for the hub to grant itself one. Write access is Kubernetes
+    RBAC in the target cluster, so it changes only by upgrading the agent there.
+
+### Granting write access
+
+Enabling remediation means choosing a scope. There are exactly two, and you must pick one.
+
+**Named namespaces — preferred:**
+
+```bash
+helm --kube-context <cluster-context> upgrade --install argus-agent <chart> \
+  --namespace argus-system --reuse-values \
+  --set remediate.enabled=true \
+  --set 'remediate.namespaces={payments,checkout}'
+```
+
+**The whole cluster:**
+
+```bash
+helm --kube-context <cluster-context> upgrade --install argus-agent <chart> \
+  --namespace argus-system --reuse-values \
+  --set remediate.enabled=true \
+  --set remediate.allNamespaces=true
+```
+
+| Setting | Effect |
+|---|---|
+| `remediate.enabled=false` (the default) | No write permission exists. The agent cannot change anything |
+| `remediate.namespaces={a,b}` | Write permission in those namespaces only, granted one namespace at a time |
+| `remediate.allNamespaces=true` | Write permission across every namespace, including `kube-system` |
+
+!!! warning "The chart refuses to guess, and will stop the install"
+    Setting `remediate.enabled=true` **without** either scope fails the install rather than
+    granting nothing — an empty grant would surface later as a confusing permission error at
+    execution time. Setting **both** scopes also fails: a namespace list beside a
+    cluster-wide grant reads as a restriction while granting everything.
+
+Prefer named namespaces. Cluster-wide scope includes `kube-system` and every other
+namespace you did not think about, so treat it as a deliberate decision rather than the
+convenient option.
+
+### What enabling it actually creates
+
+Turning it on provisions a **second, separate identity** in the target cluster, distinct
+from the one used for reading, together with admission policies that restrict even that
+identity to the specific object fields ARGUS's actions are allowed to touch.
+
+Two consequences worth knowing:
+
+- While it is off, an attempt to write is refused by the Kubernetes API server, not by
+  ARGUS. The restriction holds even if the hub is compromised.
+- Naming namespaces and granting cluster-wide scope are mutually exclusive by construction,
+  so a namespace list can never be decorative while something broader is also granted.
+
+### Removing write access
+
+```bash
+helm --kube-context <cluster-context> upgrade argus-agent <chart> \
+  --namespace argus-system --reuse-values --set remediate.enabled=false
+```
+
+The identity and its permissions are removed. The agent keeps detecting and investigating.
+
+!!! note "There is no in-product way to make one cluster read-only again"
+    Freeze windows, blast-radius caps and the circuit breaker all bound what happens
+    **without a human** — none of them stands between an operator and a fix they have
+    decided to approve. Taking a cluster out of play entirely means the upgrade above. See
+    [Guardrails](../automation/guardrails.md).
+
+### Confirming what an agent may do
+
+The cluster's own page reports the write access the agent has **discovered** by asking its
+API server — not what was configured, which is what you want when checking whether an
+approval can actually be carried out. See [Clusters](../administration/clusters.md).
 
 ## See also
 
