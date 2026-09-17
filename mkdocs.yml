@@ -1,4 +1,4 @@
-site_name: NubeStack ARGUS
+site_name: ARGUS
 site_description: >-
   Product documentation for NubeStack ARGUS — AI-assisted incident detection,
   investigation and remediation for Kubernetes fleets.
@@ -18,15 +18,15 @@ theme:
         name: Follow system theme
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: teal
-      accent: teal
+      primary: black
+      accent: indigo
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: teal
-      accent: teal
+      primary: black
+      accent: indigo
       toggle:
         icon: material/brightness-4
         name: Switch to light mode

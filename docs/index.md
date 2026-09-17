@@ -1,14 +1,46 @@
-# NubeStack ARGUS
+---
+hide:
+  - navigation
+  - toc
+---
+
+<div class="argus-hero" markdown>
+
+<svg class="argus-hero-mark" viewBox="4 4 56 56" role="img" aria-label="ARGUS">
+  <g fill="currentColor">
+    <rect x="29.6" y="4" width="4.8" height="19" rx="2.4" transform="rotate(0 32 32)"/>
+    <rect x="29.6" y="4" width="4.8" height="19" rx="2.4" transform="rotate(30 32 32)"/>
+    <rect x="29.6" y="4" width="4.8" height="19" rx="2.4" transform="rotate(60 32 32)"/>
+    <rect x="29.6" y="4" width="4.8" height="19" rx="2.4" transform="rotate(120 32 32)"/>
+    <rect x="29.6" y="4" width="4.8" height="19" rx="2.4" transform="rotate(150 32 32)"/>
+    <rect x="29.6" y="4" width="4.8" height="19" rx="2.4" transform="rotate(180 32 32)"/>
+    <rect x="29.6" y="4" width="4.8" height="19" rx="2.4" transform="rotate(240 32 32)"/>
+    <rect x="29.6" y="4" width="4.8" height="19" rx="2.4" transform="rotate(270 32 32)"/>
+    <rect x="29.6" y="4" width="4.8" height="19" rx="2.4" transform="rotate(300 32 32)"/>
+    <g class="argus-mark-sleep" opacity="0.26">
+      <rect x="29.6" y="13.5" width="4.8" height="9.5" rx="2.4" transform="rotate(90 32 32)"/>
+      <rect x="29.6" y="13.5" width="4.8" height="9.5" rx="2.4" transform="rotate(210 32 32)"/>
+      <rect x="29.6" y="13.5" width="4.8" height="9.5" rx="2.4" transform="rotate(330 32 32)"/>
+    </g>
+    <circle cx="32" cy="32" r="6.6"/>
+  </g>
+</svg>
+
+# ARGUS
+
+**Built for the gap between "an alert fired" and "the cause is understood".**
+
+[Get started](getting-started/index.md){ .md-button .md-button--primary }
+[What ARGUS is](overview/what-is-argus.md){ .md-button }
+
+</div>
+
+![The ARGUS fleet overview, showing incident counts by lifecycle state, open incidents by
+severity, cluster health and recent activity](assets/images/01-overview.png){ .argus-hero-shot }
 
 ARGUS watches your Kubernetes clusters, works out why something is broken, and proposes a
 fix you review before anything changes. It is self-hosted: the hub runs on your
 infrastructure, and one agent runs in each cluster you want it to watch.
-
-![The ARGUS fleet overview, showing incident counts by lifecycle state, open incidents by
-severity, cluster health and recent activity](assets/images/01-overview.png)
-
-*The fleet overview. The top row counts open incidents by where they have reached in their
-lifecycle, so a queue that needs a person is visible before any chart is read.*
 
 ## What it does
 
@@ -28,13 +60,49 @@ approves it, and a fresh installation cannot execute anything at all.
 
 ## Where to start
 
-| If you want to | Read |
-|---|---|
-| Understand what ARGUS is before installing it | [What ARGUS is](overview/what-is-argus.md) |
-| Get it running | [Getting started](getting-started/index.md) |
-| Understand an incident on screen | [Reading an incident](incidents/reading-an-incident.md) |
-| Know what it will and will not change | [Resolution routes](remediation/routes.md) |
-| Review it for security sign-off | [Security model](overview/security-model.md) |
+<div class="grid cards" markdown>
+
+-   :material-compass-outline:{ .lg .middle } **What ARGUS is**
+
+    ---
+
+    The product in one page, and the problem it is built around.
+
+    [Overview](overview/what-is-argus.md)
+
+-   :material-download-outline:{ .lg .middle } **Getting started**
+
+    ---
+
+    Install the hub, connect a cluster, and see your first incident.
+
+    [Getting started](getting-started/index.md)
+
+-   :material-file-search-outline:{ .lg .middle } **Reading an incident**
+
+    ---
+
+    What is on screen, and how to read the evidence behind a conclusion.
+
+    [Reading an incident](incidents/reading-an-incident.md)
+
+-   :material-source-branch:{ .lg .middle } **Resolution routes**
+
+    ---
+
+    What ARGUS will and will not change, and where a fix lands.
+
+    [Resolution routes](remediation/routes.md)
+
+-   :material-shield-check-outline:{ .lg .middle } **Security model**
+
+    ---
+
+    Trust boundaries, what leaves your cluster, and what a compromise would reach.
+
+    [Security model](overview/security-model.md)
+
+</div>
 
 ## What ARGUS does not do
 

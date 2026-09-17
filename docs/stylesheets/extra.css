@@ -43,3 +43,57 @@
 /* Wide reference tables scroll instead of overflowing the page. */
 .md-typeset__table { width: 100%; }
 .md-typeset table:not([class]) { font-size: 0.76rem; }
+
+/* Homepage hero. Scoped to the page that sets hide: [navigation, toc], so it
+   never affects an ordinary documentation page. */
+.argus-hero {
+  text-align: center;
+  max-width: 40rem;
+  margin: 2.5rem auto 1.5rem;
+}
+
+/* Same brand colour and sleep-blade animation as the product's own hero
+   mark on the marketing site (nubestack.com/products/argus/): #3c7d7d
+   throughout, with the three resting blades breathing between 26% and
+   72% opacity on a slow 6s cycle. */
+.argus-hero-mark {
+  width: clamp(88px, 12vw, 128px);
+  height: auto;
+  display: block;
+  margin: 0 auto 1rem;
+  overflow: visible;
+  color: #3c7d7d;
+}
+.argus-hero-mark .argus-mark-sleep {
+  animation: argus-hero-blink 6s ease-in-out infinite;
+}
+@keyframes argus-hero-blink {
+  0%, 62%, 100% { opacity: 0.26; }
+  30%           { opacity: 0.72; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .argus-hero-mark .argus-mark-sleep { animation: none; }
+}
+
+.argus-hero h1 {
+  font-size: 2.6rem;
+  margin: 0 0 0.75rem;
+}
+.argus-hero p {
+  font-size: 1.1rem;
+  color: var(--md-default-fg-color--light);
+  margin: 0 0 1.5rem;
+}
+.argus-hero .md-button {
+  margin: 0.3rem;
+}
+
+/* The fleet-overview screenshot beneath the hero — wider and more prominent
+   than an inline body image, but capped so it never overflows on a narrow
+   viewport. */
+.argus-hero-shot {
+  display: block;
+  max-width: 62rem;
+  width: 100%;
+  margin: 0 auto 2.5rem;
+}
