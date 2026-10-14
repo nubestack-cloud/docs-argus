@@ -32,19 +32,37 @@ visible on that basis alone.
 ## From symptom to incident
 
 A raw symptom is a **finding**. Findings do not appear in the incident list; they are the
-evidence underneath it.
+evidence underneath it, and every one is kept under **Incidents → Signals**.
 
-Findings are fingerprinted from the condition and the object, and findings sharing a
-fingerprint collapse into one incident with an occurrence count. A crash loop that
-restarts two hundred times is one incident that has been seen two hundred times.
+Only a finding that shows a real fault opens an incident: it must be classed as a fault
+rather than a risk, rest on better than unverified evidence, and show the object degraded
+or unavailable. A risky setting that has not caused harm yet, such as a deployment with
+every replica on one node, stays a signal.
 
-Not every finding opens an incident. A finding has to clear an evidence bar first — enough
-signal, on a real object, with real impact. A symptom that does not clear it is still
-recorded and visible in the cluster's finding history.
+## Grouping
 
-Related incidents are linked rather than merged: incidents on pods of the same workload,
-and incidents whose objects reference each other — a service and the pods behind it, a pod
-and the volume claim it mounts.
+ARGUS groups findings so that one fault is one incident:
+
+| Case | Result |
+|---|---|
+| The same condition re-fires on the same object | One incident, with an occurrence count |
+| Pods of one workload report the same fault | One incident on the workload, naming the pod it was observed on |
+| A pod is pending because a volume claim, ConfigMap or Secret it needs is broken | The pod's finding joins the incident on that object |
+| A node is not ready | Every affected pod on that node joins one incident |
+| A rollout stalls past its progress deadline | The stall joins the workload's incident |
+
+Probe failures from new pods during a rollout that is still within its deadline are
+recorded but do not open an incident: a normal rollout briefly reports pods that are not
+ready yet. If the rollout never completes, the stall itself raises the incident.
+
+Incidents that are related but not the same fault — a service and the workload behind it —
+stay separate and are linked on each incident page.
+
+## Incidents that clear
+
+When a fault stops, its incident closes on its own once it has been quiet for a while and a
+live check confirms the problem is gone. See
+[The incident lifecycle](lifecycle.md#incidents-that-clear-on-their-own).
 
 ## Controlling volume
 

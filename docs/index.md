@@ -35,8 +35,8 @@ hide:
 
 </div>
 
-![The ARGUS fleet overview, showing incident counts by lifecycle state, open incidents by
-severity, cluster health and recent activity](assets/images/01-overview.png){ .argus-hero-shot }
+![The ARGUS overview, showing open incidents, incidents waiting on a person, node readiness,
+fleet capacity, and the clusters' incidents by severity](assets/images/01-overview.png){ .argus-hero-shot }
 
 ARGUS watches your Kubernetes clusters, works out why something is broken, and proposes a
 fix you review before anything changes. It is self-hosted: the hub runs on your
@@ -54,6 +54,7 @@ ARGUS closes a loop that most monitoring stops halfway through.
 | Recommend | ARGUS decides where the fix belongs — your repository, or the live cluster |
 | Approve | A person reads the evidence and the proposed change, then approves or rejects it |
 | Validate | After the change lands, ARGUS checks it actually held before closing the incident |
+| Close | A problem that clears on its own is confirmed gone against the live cluster and closed |
 
 Detection and investigation are read-only. Nothing changes a cluster until someone
 approves it, and a fresh installation cannot execute anything at all.
@@ -93,6 +94,14 @@ approves it, and a fresh installation cannot execute anything at all.
     What ARGUS will and will not change, and where a fix lands.
 
     [Resolution routes](remediation/routes.md)
+
+-   :material-view-dashboard-outline:{ .lg .middle } **Your fleet**
+
+    ---
+
+    Each cluster's map, network policy, GitOps, Helm, certificates, upgrades and posture.
+
+    [Your fleet](fleet/index.md)
 
 -   :material-shield-check-outline:{ .lg .middle } **Security model**
 

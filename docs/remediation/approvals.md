@@ -14,7 +14,26 @@ incident it belongs to, where the same decision can be made in context.*
 Two places, same decision:
 
 - **Approvals** — the queue, for working through what is waiting
-- The incident's approve card — the same controls, with the evidence on screen above them
+- The incident's **Fix** card — the same controls, with the evidence on screen above them
+
+## Working through the queue
+
+The header states how many decisions are waiting and how they break down by risk, so a
+queue with something serious in it does not look like a queue of routine changes.
+
+| Control | What it does |
+|---|---|
+| Cluster | Narrows to one cluster's decisions |
+| Action | Narrows to one kind of change — a scale, a restart, a pull request |
+| Risk | Narrows by the risk ARGUS actually enforced, not the risk the model proposed |
+| Sort | Longest waiting, highest risk, or highest severity |
+
+The default order is **longest waiting first**, because the thing that goes wrong on this
+screen is a decision nobody notices rather than a decision nobody understands.
+
+Filter options are built from the decisions actually present, so the list never offers a
+filter that matches nothing. If a filter hides everything, the queue says so and names the
+real total — it never reports an empty fleet because of a filter you set.
 
 ## What to read first
 
@@ -42,7 +61,7 @@ the API server rejects stops the change and shows the rejection.
 ## Rejecting
 
 Rejecting refuses this plan. Nothing executes, the fault is unchanged, and the incident
-stays open with your reason recorded on the recommendation card.
+stays open with your reason recorded on the **Fix** card.
 
 That is a different act from closing the incident. If the fault itself is accepted or being
 handled elsewhere, dismiss the incident instead — see
@@ -50,6 +69,10 @@ handled elsewhere, dismiss the incident instead — see
 
 After a rejection you can re-analyse for a different fix, fix it at the source yourself, or
 close the incident out.
+
+A rejection is remembered. When ARGUS later proposes the same kind of fix for the same
+object, that fix is never auto-approved, and its decision quotes the reason you gave, until
+someone approves that kind of fix for that object.
 
 ## Deliberate friction
 

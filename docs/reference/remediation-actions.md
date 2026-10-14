@@ -18,6 +18,10 @@ context can raise it but never lower it below the floor.
 | Delete resource | Deletes a named object | High | No | Never |
 | Open pull request | Opens a pull request against the owning repository | Low | Not applicable | Eligible |
 
+Separately from plans, an incident about a GitOps-owned object offers **Request Argo
+refresh** or **Request Flux reconcile**. These ask the controller to look again; they change
+no workload, and they need the remediation agent and the capability to apply in place.
+
 ## Which actions each route permits
 
 The route is decided before the model proposes anything, and it constrains what may be

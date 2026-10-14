@@ -58,7 +58,7 @@ stronger.
 
 **Treat "no plan" as a result.** Most faults have no automatically executable fix. An
 investigation that reaches a clear cause and proposes nothing has done its job; the manual
-steps on the recommendation card are the deliverable.
+steps on the **Fix** card are the deliverable.
 
 ## Cost
 

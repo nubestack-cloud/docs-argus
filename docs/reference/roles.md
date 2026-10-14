@@ -28,6 +28,7 @@ Capabilities are grouped by what they are about.
 | Clusters | Viewing, onboarding, accepting and configuring clusters |
 | Users | Viewing accounts and managing grants |
 | Organisation | Reading the audit log, and changing organisation-wide settings |
+| Your account | Using ARGUS from your own AI tools with a personal access token |
 
 ## The separation worth knowing
 

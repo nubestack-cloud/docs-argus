@@ -14,6 +14,25 @@ committing to.
 Deletions and creations are treated as what they are. Deleting an object cannot be undone
 by recreating one that merely looks the same, and ARGUS does not claim otherwise.
 
+## Recent changes
+
+**Recent changes**, under **History** in the sidebar, lists every change ARGUS has made to a
+cluster: changes applied in place, and repository changes whose pull request merged. Pull
+requests still waiting to merge are listed too, marked **Open — not merged**, because they
+have not changed anything yet.
+
+![The recent changes page: each change ARGUS made, how and with what outcome, who approved
+it, and the undo it offers](../assets/images/39-recent-changes.png)
+
+*Each change says what was done, where, by whose approval, and what undoing it would
+restore.*
+
+Each row names the object and the change, how it was made, its outcome, the cluster, who
+approved it and when, and what **Undo…** would restore. A change that has already been rolled
+back says so instead of offering undo again. Narrow by cluster and time window.
+
+Undoing reverses what ARGUS did. It does not fix the problem that prompted the change.
+
 ## How it runs
 
 A rollback is not a shortcut. It is signed, version-checked, rehearsed with a server-side

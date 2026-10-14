@@ -12,7 +12,8 @@ get from compromising each one.
 | Agent to hub | Findings, tool results, execution outcomes | Mutual TLS; the agent holds a per-cluster client certificate issued at enrolment |
 | Hub to AI provider | Incident context, tool results | Your provider, your credentials; redaction applied before data reaches the hub |
 | Hub to repository | Branch and pull-request writes | A token you supply, scoped to the repositories you register |
-| Agent to Kubernetes API | Reads always, writes only if enabled | The agent's own role, plus an admission policy restricting which fields may change |
+| Your AI tools to hub | Read-only tool calls with a personal access token | Your own role re-checked on every call, read-only tools only, every call audited, rate-limited |
+| Agent to Kubernetes API | Reads always, writes only if enabled | A read-only identity; writes, if enabled, through a second identity plus an admission policy restricting which fields may change |
 
 ## What leaves your cluster
 
@@ -54,8 +55,10 @@ Remediation is enabled per cluster **when the agent is installed or upgraded**, 
 the product: the hub cannot grant an agent permissions, so write access is Kubernetes RBAC
 in the target cluster. It is scoped either to named namespaces or, deliberately opt-in, to
 the whole cluster — see
-[Whether the agent may change anything](../getting-started/connect-a-cluster.md). Beyond
-that scope the agent cannot write at all. Within it:
+[Whether the agent may change anything](../getting-started/connect-a-cluster.md). Writes go
+through a second identity, separate from the one used for reading and investigating, so the
+investigation path never holds write access. Beyond that scope the agent cannot write at
+all. Within it:
 
 - only a fixed set of typed actions can be requested, each with a known shape
 - each action is signed by the hub and bound to the object version it was built from

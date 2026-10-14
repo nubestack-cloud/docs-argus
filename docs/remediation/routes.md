@@ -40,19 +40,19 @@ certificate that needs reissuing outside Kubernetes, a container image that must
 rebuilt, a storage class that does not exist in this cluster — none is fixable by changing
 an object, and proposing a change would be wrong.
 
-On a guidance route the recommendation card carries the concrete manual steps from the
+On a guidance route the **Fix** card carries the concrete manual steps from the
 investigation: a real command with the real namespace and object name, or a named field and
 the value it should hold.
 
-![The recommendation card for an incident with no executable fix, showing manual steps and
-the route reason](../assets/images/23-stage-recommendation-guidance.png)
+![The Fix card for an incident with no executable fix, showing the manual steps and the
+route reason](../assets/images/22-incident-guidance.png)
 
-*A guidance route. The card states there is nothing to execute and gives the steps a person
-would take, rather than presenting an empty plan.*
+*A guidance route. The card states nothing has been run and gives the steps a person would
+take, rather than presenting an empty plan.*
 
 ## Seeing both channels
 
-Where a fix is proposed, the recommendation card shows both channels — repository and live
+Where a fix is proposed, the **Fix** card shows both channels — repository and live
 cluster — each with its own availability.
 
 An unavailable channel says why rather than disappearing: no GitOps controller reports

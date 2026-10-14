@@ -14,18 +14,24 @@ distinction is stated.
 | Cluster group | A named set of clusters a grant can be scoped to |
 | Confidence | The model's own signal about its root-cause statement. Not a measurement |
 | Dry-run rehearsal | A server-side Kubernetes validation of a change, before it is applied |
+| Fault and risk | A fault is something broken now and can open an incident. A risk is a setting that will cause trouble later and stays a signal |
 | Finding | One raw symptom observed in a cluster. Evidence, not an incident |
 | Fingerprint | The identity of a condition on an object, used to group findings |
 | Grant | A role plus the scope it applies to |
 | Hub | The component you run once: web interface, API, incident state machine, audit trail |
-| Incident | One problem on one object, built from the findings reporting it |
 | In-place route | A fix applied to the live object in the cluster |
+| Incident | One problem on one object, built from the findings reporting it |
 | Investigation | An AI model working through the cluster with read-only tools |
+| Personal access token | A credential that lets your own AI tool call ARGUS's read-only tools as you |
+| Phase | One of the four steps the incident page draws: Detected, Diagnosed, Fix, Holding |
 | Plan | A proposed, typed action with a target, parameters and a risk level |
+| Posture check | A check for a setting that carries security, reliability or efficiency risk |
 | Pull-request route | A fix applied to the repository the object's desired state comes from |
+| Remediation agent | The second, write-capable identity an agent runs with when remediation is enabled for its cluster |
 | Remediation | Executing an approved plan |
 | Resolution route | Where ARGUS decided a fix belongs, chosen before the model proposes |
 | Rule | One individually controllable check inside the sweep detector |
+| Signal | A finding as shown under **Incidents → Signals**, with what ARGUS did with it |
 | Toleration | A rule stopping one accepted condition on one object from opening incidents |
 | Unattended execution | Executing an auto-approved plan with no person in the loop |
 | Validation | Checking a change held before resolving the incident |
@@ -37,6 +43,7 @@ distinction is stated.
 | Finding and incident | A finding is one symptom. An incident is the problem those symptoms describe |
 | Rejecting a plan and dismissing an incident | Rejecting refuses one fix and leaves the incident open. Dismissing closes it |
 | Resolved and self-healed | Resolved is the state. Self-healed says no ARGUS action is linked to the close |
+| Signal and incident | Every finding is a signal. Only a fault with real impact opens or joins an incident |
 | Dismissed and expired | Dismissed is a person's decision. Expired is a bulk close, and it can reopen |
 | Failed and outcome unknown | Failed means the change ran and did not work. Unknown means ARGUS cannot tell |
 | Disabling a rule and adding a toleration | A rule is fleet-wide. A toleration is one condition on one object |

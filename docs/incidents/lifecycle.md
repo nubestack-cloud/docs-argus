@@ -1,79 +1,77 @@
 # The incident lifecycle
 
-Every incident moves through the same six stages, and the incident page is laid out as
-those stages in order. The rail across the top shows how far this incident got.
+Every incident moves through four phases and ends in an outcome. The incident page draws
+them as a spine across the top, with a line beneath it saying who has the next move.
 
-![The six-stage lifecycle rail across an incident page: detection, analysis,
-recommendation, approve, apply, validate](../assets/images/04-incident-detail.png)
+![The lifecycle spine of a remediated incident: detected, diagnosed, fix applied, holding,
+and the outcome fixed by ARGUS](../assets/images/24-incident-lifecycle.png)
 
-*The rail is a progress indicator. Stages an incident never reached are shown unreached
-rather than hidden, so "stopped at three of six" is legible at a glance.*
+*Each phase shows what happened and when, and the gap above the line between two phases
+is how long that step took.*
 
-## The six stages
+## The four phases
 
-| Stage | Question it answers |
+| Phase | Question it answers | What you see |
+|---|---|---|
+| Detected | What broke | Occurrences, and when it was first seen |
+| Diagnosed | Why it broke | Whether a cause was found, and the confidence the model gave it |
+| Fix | What to do, and who does it | The route, then **Decide** and **Run** for a fix ARGUS runs |
+| Holding | Did it stay fixed | The re-check window after a fix, or how the symptom stopped |
+
+The **Outcome** at the end of the spine is **Open** until the incident closes, then names how
+it closed: **Fixed by ARGUS**, **Resolved · Self-healed**, **Dismissed** or **Expired**.
+
+A phase that cannot happen for this incident is drawn as skipped, never as an empty step.
+Most faults have no fix ARGUS can run: the Fix phase then says **You do it**, holds the
+steps the investigation produced, and the spine continues from there.
+
+## Who has the next move
+
+The line under the spine is the one sentence to read first. It names who is expected to act
+and what they would do, and links to the part of the page that holds it.
+
+| Says | Meaning |
 |---|---|
-| 1. Detection | What broke |
-| 2. Analysis | Why it broke |
-| 3. Recommendation | How to fix it |
-| 4. Approve | Does a person agree |
-| 5. Apply | What ARGUS did |
-| 6. Validate | Did it hold |
-
-Most incidents stop at stage three. A fault with a clear cause and no automatically
-executable fix is a complete, correct outcome — the last three cards collapse to a single
-line saying nothing was executed, rather than presenting three empty boxes.
+| Your move | Nothing happens until a person acts: investigate, decide on a fix, or apply one |
+| Waiting on an approver | A fix is proposed and you cannot approve it yourself |
+| ARGUS is working | An investigation or an approved fix is running now |
+| Your team's review | A pull request is open and waits for your normal review and merge |
+| ARGUS is watching | A fix landed and ARGUS is watching for the symptom to come back |
+| Closed | The incident is over, and how it ended |
 
 ## States
 
-An incident is always in exactly one state. The state is what the badge shows and what the
-overview counts.
+Underneath the phases, an incident is always in exactly one state. The badge shows it in
+plain words: **Not investigated**, **Waiting on a decision**, **Fix is yours**,
+**Pull request open**, **Watching**, **Resolved** and so on. The incident list's status tabs
+group the states by who has the next move. [Incident states](../reference/incident-states.md)
+lists every state, its badge and its tab.
 
-### Before a fix exists
+## Incidents that clear on their own
 
-| State | Meaning |
-|---|---|
-| Detected | Recorded, not yet investigated |
-| Investigating | An investigation is running now, gathering live evidence |
-| Diagnosed | Investigation complete with a real cause, but nothing ARGUS can execute |
-| Needs human investigation | No conclusion reached, or a conclusion with no supported action |
+A fault often stops before anyone acts: a node comes back, a rollout finishes, a pod is
+replaced. ARGUS does not leave such an incident open. Once nothing new has been reported
+for it for a quiet period — fifteen minutes, or three times the agent's resend cooldown if
+that is longer — it checks whether the problem is really gone:
 
-### Waiting on a person
+1. If a sweep rule raised it, the rule is evaluated again against the live object.
+2. Otherwise the live object is read: a pod, node, workload, volume claim, service or
+   disruption budget is checked for the condition that made it unhealthy.
+3. If the object no longer exists, there is nothing left to be broken.
 
-| State | Meaning |
-|---|---|
-| Awaiting approval | A plan is proposed and waiting for a decision |
-| Plan rejected | Someone refused the proposed fix. Nothing was executed and the fault is unchanged |
+When the check passes, the incident closes as **Resolved · Self-healed** and its history
+records why. When it fails, or cannot be made, the incident stays open. An incident waiting
+on an approval is included: if its problem clears, the pending fix is withdrawn rather than
+left for someone to approve against a healthy object.
 
-### Acting
+![An incident that cleared on its own: diagnosed, nothing run, and the outcome
+Resolved · self-healed](../assets/images/17-incident-diagnosed.png)
 
-| State | Meaning |
-|---|---|
-| Executing | An approved in-place change is being applied |
-| Awaiting merge | A pull request is open. ARGUS is waiting for it to merge and sync |
-| Validating | The change landed; ARGUS is checking whether it held |
+*The spine shows no fix was run; the line under it says the symptom stopped without an
+ARGUS fix.*
 
-### Ended
-
-| State | Meaning |
-|---|---|
-| Resolved | Closed. The badge also says whether ARGUS's own fix is linked to the close |
-| Dismissed | Closed by a person's decision, without validating an outcome |
-| Expired | Closed in bulk because the findings behind it no longer meet the bar for an incident |
-| Reopened | A closed incident whose fault came back |
-
-### Outcome not known
-
-Two states exist because "we do not know" is more useful than a guess.
-
-| State | Meaning |
-|---|---|
-| Execution outcome unknown | ARGUS ran the change and lost track of whether it applied. Check the cluster |
-| Fix applied, not confirmed | The change was applied and could not be confirmed. Neither a failure nor a success |
-
-| State | Meaning |
-|---|---|
-| Failed | The change ran and failed. The reason is on the apply card |
+The quiet period starts again whenever the agent reconnects, so a hub or agent restart
+delays these closes rather than triggering them.
 
 ## What closing means
 

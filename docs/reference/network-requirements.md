@@ -12,6 +12,13 @@ The agent dials the hub. Nothing needs to reach into a watched cluster.
 | Hub | AI provider | HTTPS | Investigation. Not required if the provider is local |
 | Hub | Repository host | HTTPS | Branches and pull requests |
 | Hub | PostgreSQL | TCP | Everything the hub stores |
+| Hub | Notification webhooks | HTTPS | Notifications. Only if configured |
+| Your AI tools | Hub HTTP port | HTTPS | The read-only MCP endpoint, with a personal access token |
+| Cluster agent | Its own cluster's Prometheus, through the Kubernetes API | HTTPS | Workload metrics, traffic and cost. Only if configured |
+
+The hub refuses private and internal addresses for AI providers and repositories unless you
+name them under **Settings → Outbound access**. See
+[Outbound access](../administration/outbound-access.md).
 
 ## The tunnel
 

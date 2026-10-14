@@ -3,11 +3,12 @@
 Let people sign in with your own identity provider instead of an ARGUS password. Configure
 it under **Settings → Single sign-on**.
 
-![The single sign-on settings page, showing a configured provider and one group mapped to a
-role](../assets/images/19-settings-sso.png)
+![The single sign-on settings with no provider configured, and the Add a provider
+button](../assets/images/19-settings-sso.png)
 
-*A configured provider with one group mapping. The mapping is what grants access — a
-provider on its own authenticates people and gives them nothing.*
+*Until a provider is added, everyone signs in with a password. Password sign-in keeps
+working for super-admin accounts afterwards, so an identity-provider outage cannot lock
+every operator out.*
 
 ## One protocol
 

@@ -104,11 +104,22 @@ nav:
       - Configure analysis: getting-started/configure-analysis.md
       - Connect a cluster: getting-started/connect-a-cluster.md
       - Your first incident: getting-started/first-incident.md
+  - Your fleet:
+      - fleet/index.md
+      - The overview: fleet/overview.md
+      - The cluster page: fleet/cluster-page.md
+      - Map, network policy and traffic: fleet/map-and-network.md
+      - GitOps and Helm: fleet/gitops-and-helm.md
+      - Certificates, upgrades and posture: fleet/checks.md
+      - The object panel: fleet/object-panel.md
+      - Search and compare: fleet/search-and-compare.md
   - Incidents:
       - incidents/index.md
       - The incident lifecycle: incidents/lifecycle.md
+      - The incident list: incidents/incident-list.md
       - Reading an incident: incidents/reading-an-incident.md
       - What ARGUS detects: incidents/detection.md
+      - Signals: incidents/signals.md
       - Investigation: incidents/investigation.md
       - Closing an incident: incidents/closing.md
       - Tolerations: incidents/tolerations.md
@@ -135,6 +146,8 @@ nav:
       - AI providers: administration/ai-providers.md
       - Model pricing and spend: administration/spend.md
       - Git repositories: administration/repositories.md
+      - Outbound access: administration/outbound-access.md
+      - AI tools and tokens: administration/ai-tools.md
       - Detector settings: administration/detectors.md
       - Data retention: administration/retention.md
       - Insights: administration/insights.md

@@ -4,7 +4,13 @@ Unattended execution is the one setting that lets ARGUS change a cluster with no
 the loop. It is off by default and it should stay off until you have watched ARGUS propose
 fixes for a while and agreed with them.
 
-Configure it under **Settings → Investigation**.
+Configure it under **Settings → Automation**.
+
+![The automation settings: unattended execution, off, with blast-radius caps and the
+auto-approval policy below](../assets/images/41-settings-automation.png)
+
+*Unattended execution, its caps, the auto-approval policy and the windows are on one page,
+each with the values in effect.*
 
 ## What it does, precisely
 

@@ -39,10 +39,12 @@ A healthy cluster produces no incidents, and that is the correct outcome. Before
 fault:
 
 - Confirm the cluster is **Active** and heartbeating.
-- Check the cluster detail page for the resource kinds the agent discovered and may read.
+- Check the cluster's **Agent** tab for the resource kinds the agent watches and may read.
 - Check whether detectors or rules are disabled under **Settings → Detectors**.
 - Check whether storm protection has been reached for that cluster.
-- Check the **Tolerations** page for a rule silencing what you expected to see.
+- Check **Incidents → Tolerations** for a rule silencing what you expected to see.
+- Check **Incidents → Signals**: the finding may be there, recorded but not raised because it
+  is a risk rather than a fault, or showed no harm yet.
 
 ## Analysis fails immediately
 
@@ -55,8 +57,8 @@ The investigation hit its bounds. Raise the iteration and time limits under
 **Settings → Investigation**, or use a more capable model. A small model with weak
 tool-calling will stop early on faults a larger one resolves.
 
-Check the cluster detail page too: an investigation can only see resource kinds the agent
-is permitted to read.
+Check the cluster's **Agent** tab too: an investigation can only see resource kinds the
+agent is permitted to read.
 
 ## Remediation is unavailable on an incident
 
@@ -94,6 +96,20 @@ Expected, unless you turned it on. Check, in order: unattended execution is enab
 plan is within the auto-approval ceiling, a blast-radius cap has not been reached, no freeze
 window is open, and the circuit breaker has not tripped. Each of those records its reason on
 the incident.
+
+## An incident closed by itself
+
+The problem cleared and a live check confirmed it: the incident closes as
+**Resolved · Self-healed**, and its history says what was checked. If the fault is still
+present, the check would have failed and the incident stayed open — open the object in the
+object panel to see its current state. See
+[The incident lifecycle](incidents/lifecycle.md).
+
+## The Metrics tab says metrics are unavailable
+
+The cluster's agent has no Prometheus configured, or may not reach it. Point the agent at
+your Prometheus — see [Connect a cluster](getting-started/connect-a-cluster.md). A panel that
+is empty for CPU throttling is expected for containers without a CPU limit.
 
 ## Costs are showing as zero
 

@@ -3,7 +3,7 @@
 Windows control *when* unattended execution may run. They gate automation only — a person
 can approve a remediation at any time.
 
-Configure them under **Settings → Investigation**.
+Configure them under **Settings → Automation**.
 
 ## The two kinds
 

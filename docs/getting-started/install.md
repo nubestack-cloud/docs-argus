@@ -1,26 +1,71 @@
 # Install the hub
 
-Two supported paths: Docker Compose for an evaluation on one machine, and Helm for a real
-deployment. Both use published container images; nothing is built locally.
+Three supported paths, all from published artifacts — nothing is built locally:
 
-## Images
-
-| Image | Purpose |
+| You want | Use |
 |---|---|
-| `nubestack/argus-hub` | The hub: web interface, API, tunnel listener, background jobs |
-| `nubestack/argus-agent` | The cluster agent |
-| `nubestack/argus-cli-runner` | Optional runner, only for agent-CLI analysis |
+| A hub watching one cluster, in minutes | `argusctl install` |
+| To evaluate on one machine | Docker Compose |
+| A durable install | Helm |
 
-Pin an explicit image tag rather than tracking a moving one, so an unplanned restart cannot
-change the version you are running.
+## What is published
+
+Every release publishes, under one version:
+
+| Artifact | Where |
+|---|---|
+| Hub chart | `oci://registry-1.docker.io/nubestack/argus-hub-chart` |
+| Agent chart | `oci://registry-1.docker.io/nubestack/argus-agent-chart` |
+| `argusctl`, the install and enrolment command line | `nubestack/argusctl` |
+| Images the charts run | `nubestack/argus-hub`, `nubestack/argus-agent`, `nubestack/argus-cli-runner` |
+
+A chart version pins every image it runs by digest, so installing a given `--version` installs
+the same software every time. Always pass `--version`. Images are published for `linux/amd64`
+and `linux/arm64`.
+
+## Five-minute install
+
+One command takes an empty Kubernetes cluster to a running hub that already watches that
+cluster. Run `argusctl` from its image:
+
+```bash
+ARGUS_VERSION=<version>    # a published release, such as 0.2.0-rc.2
+alias argusctl='docker run --rm -it --network host -v "$HOME/.kube:$HOME/.kube:ro" -e KUBECONFIG="$HOME/.kube/config" nubestack/argusctl:'"$ARGUS_VERSION"
+argusctl install --context <kube-context> --yes
+```
+
+You need a kubeconfig context with cluster-admin on the target cluster, and nodes that can
+pull from Docker Hub. It:
+
+1. Checks, changing nothing, that it can create what it needs, that a default storage class
+   exists and a node is ready, and how agents will reach the tunnel. Each failure names the
+   flag or command that fixes it.
+2. Installs the hub with a bundled PostgreSQL, showing each pod's state until it is ready.
+3. Enrols this cluster's agent, accepts it and waits for it to be **Active**.
+4. Prints how to sign in, and the command that reads the administrator password.
+
+The one choice with lasting consequences is how agents reach the tunnel, because the address
+is written into the tunnel certificate. A cluster with a load-balancer gets one; otherwise a
+node port is used. `--tunnel-exposure` and `--tunnel-endpoint` choose for you.
+
+| Flag | Meaning |
+|---|---|
+| `--context`, `--kubeconfig` | Where to install |
+| `--yes` | Answer yes to every question |
+| `--storage-class` | Storage class for the bundled PostgreSQL. Default: the cluster's default |
+| `--model-credential-file` | A Claude subscription token, Anthropic API key or OpenAI API key in a file, to deploy the agent-CLI runner with it |
+| `--ingress-host`, `--ingress-class` | Serve the web interface on a plain-HTTP ingress at that host |
+| `--display-name` | This cluster's name on the hub |
+
+Running it again is safe: it leaves an existing hub alone. It does not set up TLS, an
+external database or remediation; for those, use Helm. Further clusters are enrolled from
+the hub or with `argusctl cluster add`.
 
 ## Docker Compose
 
-Use Compose to evaluate ARGUS on a single machine. It starts the hub, PostgreSQL, and the
-local embedding model.
-
-Choose the configuration that matches how you want analysis to run — an external API
-provider, or an agent CLI runner — and copy its environment template. Then set, at minimum:
+Use Compose to evaluate ARGUS on a single machine. It starts the hub, PostgreSQL and the
+local embedding model. Choose the configuration that matches how you want analysis to run —
+an external API provider, or an agent CLI runner — and copy its environment template. Then set, at minimum:
 
 | Setting | Value |
 |---|---|

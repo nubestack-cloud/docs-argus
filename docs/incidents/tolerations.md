@@ -42,7 +42,7 @@ the fault stays visible as data even while it stays out of the incident queue.
 
 ## Reviewing them
 
-Open a row on the **Tolerations** page to see why it was tolerated, what ARGUS had
+Open a row under **Incidents → Tolerations** to see why it was tolerated, what ARGUS had
 concluded about the original incident, and what the rule has silenced since.
 
 Review the list periodically. A toleration with a large suppressed count is either doing
@@ -50,6 +50,20 @@ exactly its job or hiding something that has grown worse; the original analysis 
 help you tell which.
 
 Removing a rule resumes normal detection for that object immediately.
+
+## Tolerations ARGUS creates
+
+Closing an incident as **Dismissed** or **Expired** creates a toleration automatically,
+scoped to that object and the reasons its findings carried, so the same condition does not
+reopen an incident the next day:
+
+| Close | Toleration lasts |
+|---|---|
+| Dismissed — a person decided it needs no action | 14 days |
+| Expired — closed in bulk, with no individual decision | 3 days |
+
+These rows are marked **by ARGUS** and say they were suppressed automatically. They expire on
+their own, and you can remove one early like any other.
 
 ## See also
 

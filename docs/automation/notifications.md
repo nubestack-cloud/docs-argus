@@ -3,6 +3,8 @@
 ARGUS posts to a webhook when something happens that a person should know about. Configure
 it under **Settings → Notifications**.
 
+![The notification settings, with the organisation webhook URL](../assets/images/43-settings-notifications.png)
+
 ## Configuring the webhook
 
 Set the webhook URL and save. Leaving the field blank keeps the current webhook unchanged;
@@ -10,6 +12,21 @@ to remove one, use the explicit clear option rather than blanking the field.
 
 Point it at whatever your team already watches — a chat integration, an alert router, or
 your own receiver.
+
+## Routing to more than one place
+
+**Settings → Notification routing** sends notifications to different webhooks by cluster
+group, minimum severity and what happened — for example high and above from production
+clusters to an on-call channel, everything else to a team channel.
+
+| Part | What it is |
+|---|---|
+| Destinations | A name and a webhook URL. The URL is shown only while you enter it; afterwards ARGUS reports only that one is set, because a webhook URL usually carries its own access token |
+| Rules | Considered in order. Each matches a cluster group, a severity floor — **High and above** includes critical — and a kind of event, and names a destination |
+| Default rule | Always last and always matches, sending to the organisation webhook above. Nothing is ever dropped |
+
+Saving replaces the whole table in one step, so notifications are never routed by half an
+edit. Off by default: with no rules, everything goes to the organisation webhook.
 
 ## What it is for
 

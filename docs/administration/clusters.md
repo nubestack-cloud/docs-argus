@@ -3,11 +3,11 @@
 The **Clusters** page is the inventory of everything ARGUS watches, with the health of each
 agent connection.
 
-![The clusters page listing clusters with state, agent version, open incidents and last
-heartbeat](../assets/images/02-clusters.png)
+![The clusters page listing clusters with state, agent version, compatibility, open
+incidents, last heartbeat and next upgrade](../assets/images/02-clusters.png)
 
-*Counters above the table pick out clusters needing attention, pending approval or
-disconnected. Filters cover state and agent version.*
+*Tabs above the table pick out clusters needing attention, pending approval, not reporting
+or retired.*
 
 ## What the list tells you
 
@@ -16,8 +16,13 @@ disconnected. Filters cover state and agent version.*
 | Cluster | The display name given at install, and the cluster's identifier |
 | State | Where the connection stands. See [Cluster states](../reference/cluster-states.md) |
 | Agent version | The agent build running there, so a straggler is visible |
+| Compatibility | Whether that agent version is supported by this hub |
 | Open incidents | How many incidents are currently open for that cluster |
 | Last heartbeat | When the agent last reported. Agents heartbeat every 30 seconds |
+| Next upgrade | The next Kubernetes version, and whether the upgrade check found blockers |
+
+**Enroll a cluster** at the top right starts the enrolment described in
+[Connect a cluster](../getting-started/connect-a-cluster.md).
 
 ## Accepting a cluster
 
@@ -27,24 +32,15 @@ that just connected is the one you meant to connect.
 
 Rejecting a cluster refuses it without deleting the record.
 
-## Cluster detail
+## The cluster page
 
-Open a cluster for its inventory and configuration: node status and capacity, the resource
-kinds the agent discovered and is permitted to read, its remediation scope, and its
-detection settings.
-
-![A cluster detail page showing node status, discovered resources and remediation
-configuration](../assets/images/18-cluster-detail.png)
-
-*Cluster detail. The remediation card states plainly whether the agent may write, and in
-which namespaces.*
-
-This is where to check whether an agent can actually do what you expect. If remediation
-looks unavailable on an incident, the answer is usually here.
+Open a cluster for everything ARGUS knows about it: health, timeline, incidents, the map,
+GitOps and Helm, certificates, upgrade readiness, posture, network policy, traffic, cost and
+the agent. See [The cluster page](../fleet/cluster-page.md).
 
 ## Remediation authority
 
-The remediation card on a cluster's page answers one question: **may this agent change
+The **Remediation authority** card on the cluster's **Agent** tab answers one question: **may this agent change
 anything here, and where.** Check it before relying on an approval being carried out.
 
 What it shows is what the agent **discovered** by asking its own API server, not what

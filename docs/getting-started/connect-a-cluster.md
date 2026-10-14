@@ -11,8 +11,8 @@ authorises exactly one agent install.
 ## 2. Install the agent
 
 Install the agent chart into the cluster you want watched, in its own namespace, passing
-the hub's API address and the token. The guided card on the overview shows the exact
-command with the token already filled in, ready to copy.
+the hub's API address and the token. The **Enroll a cluster** dialog shows the exact
+command with the address and token already filled in, ready to copy.
 
 Two values have to be right:
 
@@ -40,11 +40,11 @@ moment to confirm the cluster is the one you meant.
 The cluster becomes **Active** once its tunnel is up and it is reporting. The **Clusters**
 page shows state, agent version, open incident count and last heartbeat.
 
-![The clusters page listing three clusters with state, agent version, open incident count
-and last heartbeat](../assets/images/02-clusters.png)
+![The clusters page listing clusters with state, agent version, compatibility, open
+incidents and last heartbeat](../assets/images/02-clusters.png)
 
-*Clusters list. Filters cover state and agent version; the counters above the table pick
-out clusters needing attention.*
+*Clusters list. Tabs pick out clusters needing attention, pending approval or not
+reporting.*
 
 Findings normally start arriving within a minute or two. A healthy cluster with nothing
 wrong produces no incidents, which is the correct outcome rather than a sign of a problem.
@@ -130,6 +130,31 @@ The identity and its permissions are removed. The agent keeps detecting and inve
 The cluster's own page reports the write access the agent has **discovered** by asking its
 API server — not what was configured, which is what you want when checking whether an
 approval can actually be carried out. See [Clusters](../administration/clusters.md).
+
+## Connecting Prometheus
+
+If the cluster runs Prometheus, point the agent at it to add workload metrics. Off by
+default:
+
+```bash
+helm --kube-context <cluster-context> upgrade argus-agent <chart> \
+  --namespace argus-system --reuse-values \
+  --set metrics.prometheusService.namespace=monitoring \
+  --set metrics.prometheusService.name=prometheus-operated \
+  --set metrics.prometheusService.port=9090
+```
+
+The agent reaches Prometheus through the Kubernetes API server, and is granted read access
+to that one Service and nothing else. With it connected:
+
+| Gains | Where |
+|---|---|
+| CPU, memory, restarts and throttling for a workload | The object panel's **Metrics** tab, and an incident's **Resource usage** tab |
+| Who talks to whom, from Istio or Beyla metrics | The cluster's **Traffic** tab |
+| Spend per namespace, from OpenCost metrics | The cluster's **Cost** tab |
+| Metric queries during an investigation | Investigation, for that cluster |
+
+The **Traffic** and **Cost** tabs say whether the agent may reach the Service.
 
 ## See also
 

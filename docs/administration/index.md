@@ -10,6 +10,10 @@ to, and what it keeps.
 - [AI providers](ai-providers.md) — configuring providers and switching between them.
 - [Model pricing and spend](spend.md) — making cost visible and bounding it.
 - [Git repositories](repositories.md) — where ARGUS may propose pull requests.
+- [Outbound access](outbound-access.md) — naming the internal model and Git servers ARGUS may
+  reach.
+- [AI tools and tokens](ai-tools.md) — using ARGUS from Claude Code, Cursor or VS Code with a
+  personal token.
 - [Detector settings](detectors.md) — controlling what becomes an incident.
 - [Data retention](retention.md) — how long history is kept.
 - [Insights](insights.md) — fleet-wide patterns across incidents and findings.

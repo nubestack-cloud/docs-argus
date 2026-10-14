@@ -6,7 +6,8 @@ ARGUS keeps everything forever unless you set a window. Configure retention unde
 ![The data retention settings, with three windows all defaulting to keep
 forever](../assets/images/13-settings-general.png)
 
-*Three independent windows. Blank means keep forever, which is the default for all three.*
+*Three independent windows, here set to 120 days each. Blank means keep forever, which is
+the default for all three.*
 
 ## The three windows
 

@@ -1,101 +1,148 @@
 # Reading an incident
 
-The incident page is six cards, one per lifecycle stage, each answering one question. This
-page says what is in each and what to look at first.
+The incident page answers four questions in order: what broke, why, what to do about it,
+and whether it held. This page says where each answer is and what to look at first.
+
+![An incident waiting on a decision: the header, the lifecycle spine, the next-move line,
+and the What broke card beside the facts](../assets/images/04-incident-detail.png)
+
+*Header, spine and next-move line first; then one card per question, with the facts and
+history beside them.*
 
 ## Read these three things first
 
-The heading names the object — kind, namespace, name — and the line under it is the
-condition text from the cluster itself. Between them they answer "what broke" without
-scrolling.
+The **header** names the object — its name, kind and namespace — with its severity and
+state, and under it the condition in the cluster's own words. The line below gives the
+cluster, the pod it was observed on when the incident is about a workload, when it was
+first and last seen, and how many events stand behind it.
 
-The **route** badge says where a fix for this object belongs: a pull request, an in-place
-change, both, or guidance.
+The **spine** shows how far the incident got: Detected, Diagnosed, Fix, Holding, and the
+outcome. See [The incident lifecycle](lifecycle.md).
 
-The **rail** says how far the incident got. If it stopped at three, there is nothing to
-approve and the remaining cards say so in one line.
+The **next-move line** under the spine says who is expected to act and what they would do,
+and links to the card that holds it.
 
-## 1. Detection
+## What broke
 
-The finding that opened the incident: the object, and the condition in the cluster's own
-words. When a GitOps controller owns the object, a chip names it — that is a fact about the
-object, true before any fix is considered.
+The finding that opened the incident, and every reason reported against it since. Each
+reason is drawn as a bar with its count, so a pod that was **Unhealthy** two hundred times
+and hit **FailedMount** twice reads at a glance.
 
-Open **What happened** for the full history of this condition recurring, rather than only
-its most recent occurrence.
+Chips say where the evidence came from and what owns the object:
 
-## 2. Analysis
+| Chip | Meaning |
+|---|---|
+| Kubernetes event | Forwarded from the cluster's own Warning events |
+| ARGUS check | Read by ARGUS from the object's status, whether or not the cluster emitted an event |
+| Managed by Helm, Argo CD or Flux | The object is owned by a release or a GitOps controller — a fact true before any fix is considered |
 
-![The analysis card, showing a root-cause statement, a confidence figure and a collapsed
-causal chain](../assets/images/21-stage-analysis.png)
+## Why
 
-*The root cause in prose, the confidence beside it, and the causal chain collapsed behind
-its own step count and provenance.*
+![The Why card: the root cause marked as AI, its confidence, the collapsed causal chain,
+what was ruled out, and the affected-objects graph](../assets/images/20-incident-why.png)
 
-The root-cause statement, a confidence figure, and the causal chain. The chain is collapsed
-by default; its header still shows how many steps it has and whether ARGUS observed the
-tool calls directly or the model reported them afterwards.
+*The cause first, then the evidence behind it: the causal chain, what was ruled out, and
+the objects involved.*
 
-Open a step to see the tool call and what came back. Nothing in this card is a substitute
-for that evidence — a high confidence figure next to a chain you have not read is still an
-unverified claim.
+The root cause is marked **AI** and stated in one sentence, with **Full explanation**
+behind it and the model's confidence beside it. Confidence is the model's own signal, not a
+measurement.
 
-The footer records the model, how many iterations it used, tokens, cost and when it ran,
-and marks an investigation that ran automatically rather than because someone clicked.
+Under it:
 
-## 3. Recommendation
+- **Causal chain** — every tool call the investigation made, in order. The header says
+  whether ARGUS observed the calls as they ran or the model reported them afterwards
+  (**Self-reported**). Open a step to see the call and what came back.
+- **Ruled out** — hypotheses the investigation considered and rejected, each with the
+  evidence that rejected it.
+- **Evidence gathered** — how many reads stand behind the conclusion, by kind.
+- **What it could read** — one bar splitting the investigation's reads into answered, found
+  nothing, refused and failed, with the tools it did not have (no Prometheus, no dry-run
+  grant, no readable repository) named under it. When most reads were refused or failed, the
+  confidence is capped, and the bar shows why.
+- **Recent changes** — what changed on this object and its neighbours shortly before.
+- The model, iterations, tokens, cost and when it ran.
 
-What to do, and where it belongs. This card holds:
+Below these, evidence tabs let you check the conclusion against the cluster:
 
-- the route and, in one sentence, why that route
-- the concrete manual steps, where the investigation produced them
-- the proposed plan, if there is one, with its risk and reversibility
-- the two channels — repository and live cluster — each with its own availability and its
-  own rendered change
-- **Why this route?**, collapsed, holding the repository, path and synced commit behind the
-  decision
+| Tab | Shows |
+|---|---|
+| Affected objects | A graph of what the object owns, uses and is reached by. Select a node to inspect it; **Export as PNG** saves the picture |
+| Changes before | Recorded changes to this object, its owners and its neighbours before the incident opened |
+| Resource usage | CPU, memory, restarts and throttling around the incident, when the cluster's agent has Prometheus configured |
+| Scheduling | Why a pending pod will not schedule, node by node |
+| Git vs cluster | What the repository says against what the cluster runs, for a GitOps-owned object |
 
-![The recommendation card, showing the pull-request and in-place channels with their
-availability and the rendered change](../assets/images/19-stage-recommendation.png)
+A tab that does not apply to this incident is not offered. **Check it yourself** gives the
+`kubectl` command that shows the same object, so you can verify a claim directly.
 
-*Both channels are shown, with the reason one is unavailable rather than hiding the option.
-The pull-request route leads, because a live patch to a GitOps-managed object is reverted by
-the next sync. The repository, path and synced commit sit behind* Why this route? *at the
-bottom.*
+## Fix
 
-## 4. Approve
+![The Fix card for an in-place route: the proposed change, the approval decision with its
+gate reasoning, and the steps for a person to run](../assets/images/21-incident-fix.png)
 
-The decision. Shown only when there is something to decide: the action, the target, the
-risk level, whether it can be reversed, and the rendered change.
+*The route and its reason, then what ARGUS would run and the decision it needs, then what a
+person would do instead.*
 
-Where a plan cannot execute unattended, this card says which gate stopped it. Where an
-incident is held pending a fleet-wide staged rollout, it says that too.
+The **route** says where a fix for this object belongs — a pull request, an in-place change,
+both, or guidance — and in one sentence why. **Built from the causal chain** links back to
+the evidence the fix rests on.
 
-## 5. Apply
+When ARGUS can run the fix, **ARGUS runs it** shows:
 
-What ARGUS did. For an in-place change: the result of the dry-run rehearsal, then the
-execution outcome. For a repository change: the pull request, linked, with its merge state.
+- **The change** — the action, its risk, whether it can be undone, whether it refuses to run
+  if the object has changed since the plan was made, and **Preview change** for the exact
+  change.
+- **Decision** — whether it needs your approval and why: which safety rule keeps it from
+  running on its own. **Approve** and **Reject** are here. If it cannot run yet — for
+  example because the cluster has no remediation agent connected — the reason is stated
+  under the buttons.
 
-## 6. Validate
+**You do it** holds the steps the investigation produced for a person, marked **AI**, with a
+warning when a change made by hand would be reverted by the object's owner.
 
-Whether the fix held. Validation is not a formality — see
-[Validation](../remediation/validation.md) for the three signals it requires.
+**Pull request** says whether a repository change is available and, if not, why. **Why this
+route?** at the bottom holds the facts behind the decision: the owner, the repository, the
+path and the synced commit.
 
-## When cards 4, 5 and 6 collapse
+![The Fix card for a guidance route, where the steps are a person's and no channel is
+available](../assets/images/22-incident-guidance.png)
 
-If an incident never reached execution, those three cards become one line: *no fix was
-executed — nothing to approve, apply or validate*. This is the majority case. The rail
-still shows all six stages, because how far the incident got is information.
+*A guidance route. The cause is known and the steps are a person's; nothing has been run,
+and the card says so.*
 
-![A diagnosed incident whose rail marks recommendation, approve, apply and validate as not
-applicable](../assets/images/17-incident-diagnosed.png)
+## Holding
 
-*A diagnosed incident. The cause is stated at 95% confidence, and the rail marks the
-remaining stages* not applicable *rather than pending — the investigation finished, and
-there is nothing for ARGUS to execute.*
+After a fix lands, ARGUS watches for the symptom to come back before it closes the incident.
+This phase says what it is waiting for. See [Validation](../remediation/validation.md).
+
+## Facts and history
+
+The side column holds the facts — cluster, owner, workload, first seen, when it was
+investigated and whether automatically — and **Prior occurrences**, earlier incidents on the
+same object. **History** lists every step the incident took, with the time between steps;
+**What happened** under it holds every finding behind the incident.
+
+## Actions
+
+| Control | What it does |
+|---|---|
+| **Analyze** or **Re-analyze** | Starts an investigation, or a fresh one |
+| **Close out** | **Mark resolved…**, **Dismiss…** or **Tolerate…**, each asking for a note |
+| More actions | **Download report**, a Markdown record of the incident; **Copy summary**, a short version for a ticket or a chat |
+
+A control you lack the capability for stays visible and disabled, with the missing
+capability named.
+
+![A remediated incident: the spine ends in Fixed by ARGUS and the next-move line says the
+re-check window passed with no new findings](../assets/images/23-incident-remediated.png)
+
+*A closed incident keeps the whole record: what broke, why, what ran, and how long each
+step took.*
 
 ## See also
 
 - [The incident lifecycle](lifecycle.md)
 - [Investigation](investigation.md)
 - [Resolution routes](../remediation/routes.md)
+- [Approving a fix](../remediation/approvals.md)

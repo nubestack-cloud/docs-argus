@@ -35,6 +35,21 @@ release, changing the cluster directly is a stop-gap that the next sync reverts.
 that out from the cluster's own ownership facts before it proposes anything, and routes the
 fix to your repository instead.
 
+## A working view of every cluster
+
+Alongside incidents, ARGUS shows each cluster the way you would want to see it when
+something is wrong:
+
+- how workloads connect and what network policy allows;
+- what Argo CD, Flux and Helm report;
+- which certificates expire next, what blocks the next Kubernetes version and which
+  settings carry risk;
+- what changed, and when.
+
+Any object can be opened, compared with another or found across the fleet. The same views
+are available to your own AI tools, read-only, through a personal access token. See
+[Your fleet](../fleet/index.md).
+
 ## The approval boundary
 
 Every change ARGUS can make to a cluster is an approval away. The set of changes it can
