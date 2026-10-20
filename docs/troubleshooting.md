@@ -26,12 +26,15 @@ The agent has not reached the hub. In order of likelihood:
 
 ## A cluster goes disconnected after working
 
-If the hub's tunnel address or certificate names changed, agents that enrolled against the
-old address can no longer verify the hub and will reconnect unsuccessfully. Restore the
-address, or re-enrol.
+If the hub moved to a new address, agents that enrolled against the old one cannot reach or
+verify it. Upgrade each agent with the new address, or restore the old one.
 
-If the agent pod restarted without persistence enabled, it has lost its certificate and
-needs enrolling again. Enable persistence to prevent this.
+If the tunnel drops about once a minute, something in front of the hub's ingress closes idle
+connections: raise its idle timeout to at least 60 seconds. See
+[Network requirements](reference/network-requirements.md#the-tunnel).
+
+If the agent was uninstalled and installed again, it lost its identity and enrols afresh;
+decommission the old record on **Clusters** first.
 
 ## No incidents appear
 

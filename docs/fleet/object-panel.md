@@ -19,11 +19,11 @@ with its rollout, a pending pod with scheduling.*
 | Logs | Container logs, with a container picker | Pods and workloads |
 | Metrics | CPU, memory, restarts and throttling | Pods and workloads |
 | Related | What it owns, uses and is reached by, as a graph | Every object |
-| Connectivity | Whether traffic sent at it reaches a ready pod, and which hop breaks first | Services, ingresses, routes, pods and workloads |
+| Connectivity | Whether traffic sent at it reaches a ready pod, and which hop breaks first. **Probe it now** resolves the Service name, connects to its cluster IP and up to five ready endpoints, and sends one HTTP request where the port looks like HTTP, from the agent's own pod; only status comes back, never a response body | Services, ingresses, routes, pods and workloads |
 | Changes | Its recorded changes | Every object |
 | Rollout | Whether a rollout can proceed without losing availability | Deployments |
 | Autoscaler | Why an autoscaler is or is not scaling | Autoscalers |
-| Scheduling | Why a pending pod will not schedule | Pending pods |
+| Scheduling | Why a pending pod will not schedule, and on a cluster running Karpenter, whether each NodePool could provision a node for it | Pending pods |
 | Drain impact | What draining the node would do: pods evicted per workload, workloads left with no ready replica elsewhere, disruption budgets that would hold the drain, `emptyDir` data lost, pods with no controller, and DaemonSet pods that stay | Nodes |
 | Helm, GitOps | The release or application that owns it | Objects with an owner |
 | Permissions | What its service account may do, and through which bindings | Service accounts and the workloads that use them |

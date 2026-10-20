@@ -1,119 +1,183 @@
 # Install the hub
 
-Three supported paths, all from published artifacts — nothing is built locally:
+ARGUS has two parts, each a Helm chart:
 
-| You want | Use |
-|---|---|
-| A hub watching one cluster, in minutes | `argusctl install` |
-| To evaluate on one machine | Docker Compose |
-| A durable install | Helm |
+- the **hub** — the web interface, the API and the database. You install it once.
+- the **agent** — runs in each cluster you want to watch. The hub installs one for its own
+  cluster automatically.
 
-## What is published
+So one `helm install` gives you a hub that is already watching the cluster it runs in.
 
-Every release publishes, under one version:
+## Before you start
 
-| Artifact | Where |
-|---|---|
-| Hub chart | `oci://registry-1.docker.io/nubestack/argus-hub-chart` |
-| Agent chart | `oci://registry-1.docker.io/nubestack/argus-agent-chart` |
-| `argusctl`, the install and enrolment command line | `nubestack/argusctl` |
-| Images the charts run | `nubestack/argus-hub`, `nubestack/argus-agent`, `nubestack/argus-cli-runner` |
+You need:
 
-A chart version pins every image it runs by digest, so installing a given `--version` installs
-the same software every time. Always pass `--version`. Images are published for `linux/amd64`
-and `linux/arm64`.
+- a Kubernetes cluster for the hub, version 1.29 or later;
+- Helm 3.8 or later on your machine;
+- an ingress controller in that cluster, or a Gateway API Gateway (see
+  [Gateway API](#gateway-api-instead-of-ingress));
+- a hostname for the hub, such as `argus.example.com`, that your browser and your other
+  clusters can reach;
+- optionally, cert-manager, to get HTTPS without handling certificates yourself.
 
-## Five-minute install
+!!! tip "No DNS name to spare?"
+    `argus.<ingress-ip>.nip.io` points at your ingress controller's IP address with no DNS
+    change, which is enough for a trial.
 
-One command takes an empty Kubernetes cluster to a running hub that already watches that
-cluster. Run `argusctl` from its image:
+Decide two things now, because they are hard to change later:
 
-```bash
-ARGUS_VERSION=<version>    # a published release, such as 0.2.0-rc.2
-alias argusctl='docker run --rm -it --network host -v "$HOME/.kube:$HOME/.kube:ro" -e KUBECONFIG="$HOME/.kube/config" nubestack/argusctl:'"$ARGUS_VERSION"
-argusctl install --context <kube-context> --yes
-```
+1. **How big the database should be.** The default is 10 GB, enough for a handful of clusters.
+   Plan about 0.5–1 GB for each busy cluster you will watch. Helm cannot grow the volume after
+   installing, so pick the size up front.
+2. **Where the data lives.** By default the hub runs its own database in the cluster. That is the
+   simplest choice, but it has no scheduled backups. If incident history and the audit log must
+   survive losing the cluster, use a managed database instead: see
+   [An external database](#an-external-database).
 
-You need a kubeconfig context with cluster-admin on the target cluster, and nodes that can
-pull from Docker Hub. It:
+See [Requirements](requirements.md) for the full list.
 
-1. Checks, changing nothing, that it can create what it needs, that a default storage class
-   exists and a node is ready, and how agents will reach the tunnel. Each failure names the
-   flag or command that fixes it.
-2. Installs the hub with a bundled PostgreSQL, showing each pod's state until it is ready.
-3. Enrols this cluster's agent, accepts it and waits for it to be **Active**.
-4. Prints how to sign in, and the command that reads the administrator password.
-
-The one choice with lasting consequences is how agents reach the tunnel, because the address
-is written into the tunnel certificate. A cluster with a load-balancer gets one; otherwise a
-node port is used. `--tunnel-exposure` and `--tunnel-endpoint` choose for you.
-
-| Flag | Meaning |
-|---|---|
-| `--context`, `--kubeconfig` | Where to install |
-| `--yes` | Answer yes to every question |
-| `--storage-class` | Storage class for the bundled PostgreSQL. Default: the cluster's default |
-| `--model-credential-file` | A Claude subscription token, Anthropic API key or OpenAI API key in a file, to deploy the agent-CLI runner with it |
-| `--ingress-host`, `--ingress-class` | Serve the web interface on a plain-HTTP ingress at that host |
-| `--display-name` | This cluster's name on the hub |
-
-Running it again is safe: it leaves an existing hub alone. It does not set up TLS, an
-external database or remediation; for those, use Helm. Further clusters are enrolled from
-the hub or with `argusctl cluster add`.
-
-## Docker Compose
-
-Use Compose to evaluate ARGUS on a single machine. It starts the hub, PostgreSQL and the
-local embedding model. Choose the configuration that matches how you want analysis to run —
-an external API provider, or an agent CLI runner — and copy its environment template. Then set, at minimum:
-
-| Setting | Value |
-|---|---|
-| Bootstrap password | The initial password for the built-in administrator |
-| Tunnel public endpoint | The host and port your clusters will dial, not `localhost` |
-
-Start the stack, then pull the embedding model once:
+## Step 1: Install the hub
 
 ```bash
-docker compose exec ollama ollama pull bge-m3
+helm install argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.0 \
+  -n argus-system --create-namespace \
+  --set ingress.host=argus.example.com \
+  --set ingress.clusterIssuer=letsencrypt
 ```
 
-Open `http://localhost:8080` and sign in.
-
-!!! warning "Compose is for evaluation"
-    There are no database backups in a Compose deployment. Do not point it at clusters
-    whose incident history you need to keep.
-
-## Helm
-
-Use Helm for a deployment you intend to keep.
-
-Copy the values file for your chosen analysis configuration, replace every placeholder, and
-install the hub chart into its own namespace. The settings that matter most:
-
-| Setting | Why it matters |
+| Option | What to put |
 |---|---|
-| Tunnel public endpoint | The address agents dial. Agents pin it at enrolment; changing it later means re-enrolling |
-| Tunnel service type | Use a load balancer or a deliberate node port. Agents in other clusters must reach it |
-| PostgreSQL mode | Use an external, backed-up instance for anything you care about |
-| Replica count | Keep it at one |
+| `ingress.host` | **Required.** The hub's hostname |
+| `ingress.clusterIssuer` | Your cert-manager ClusterIssuer, for HTTPS. No cert-manager? Leave it out, and either add `--set ingress.tls.enabled=true --set ingress.tls.secretName=<your TLS Secret>`, or use plain HTTP for a trial |
+| `ingress.className` | Only if the cluster has more than one ingress controller |
+| `postgres.bundled.persistence.size` | Only if you need more than 10Gi, for example `50Gi` |
+| `postgres.bundled.persistence.storageClass` | Only if the cluster has no default storage class, or you want a specific one |
 
-The chart generates a bootstrap password and stores it in a secret in the hub's namespace.
-Read it once, sign in, and change it.
+Wait for it to start. This takes about a minute, mostly downloading images:
 
-### Exposing the hub
+```bash
+kubectl -n argus-system rollout status deploy/argus-hub --timeout=5m
+```
 
-The web interface and API are ordinary HTTP and belong behind your normal ingress with TLS.
-The tunnel port is separate and must not pass through an HTTP proxy.
+You now have the hub, its database, and an agent for this cluster. The agent connects by itself
+within a minute and appears on **Clusters** as `local`: there is no token to issue and nothing to
+accept. Agents connect through the same address as the web interface, so there is no second port
+to open.
 
-## After installing
+!!! note "Always pass `--version`"
+    Each chart version always installs exactly the same software. A misspelt option stops the
+    install and names the option, rather than being ignored.
 
-1. [Sign in and secure the bootstrap account](first-sign-in.md).
-2. [Configure an AI provider and test it](configure-analysis.md).
-3. [Connect your first cluster](connect-a-cluster.md).
+## Step 2: Sign in
+
+[Sign in and change the bootstrap password](first-sign-in.md).
+
+## Step 3: Connect an AI model
+
+ARGUS uses an AI model to investigate incidents. Pick one:
+
+- **A model behind an API** — any OpenAI-compatible endpoint, including a model you host
+  yourself. Add it in the web interface: see [Configure analysis](configure-analysis.md).
+  Nothing to install.
+- **Claude Code or Codex** — the hub runs these for you once you give it a credential, as below.
+
+### Claude Code or Codex
+
+Save the credential to a file without showing it on screen, then upgrade the hub with it:
+
+```bash
+mkdir -p ~/.argus && chmod 700 ~/.argus
+read -rs TOKEN && printf '%s' "$TOKEN" > ~/.argus/model-credential && unset TOKEN && chmod 600 ~/.argus/model-credential
+
+helm upgrade argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.0 \
+  -n argus-system --reset-then-reuse-values \
+  --set-file cliRunner.modelCredential.claudeCodeOauthToken=$HOME/.argus/model-credential \
+  --set cliRunner.authMode=subscription
+```
+
+That example is for a Claude subscription. For the others, use:
+
+| You have | Option |
+|---|---|
+| A Claude subscription | `cliRunner.modelCredential.claudeCodeOauthToken`, plus `cliRunner.authMode=subscription` |
+| An Anthropic API key | `cliRunner.modelCredential.anthropicApiKey` |
+| An OpenAI API key (Codex) | `cliRunner.modelCredential.openaiApiKey` |
+| The credential in a Secret already | `cliRunner.modelCredential.existingSecret`, with key `CLAUDE_CODE_OAUTH_TOKEN`, `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` |
+
+!!! warning "Never pass a credential with plain `--set`"
+    It would be saved in your shell history. Use `--set-file`, or a Secret.
+
+Then add a provider of kind **CLI**, with runner URL `http://argus-hub-cli-runner:8090`: see
+[Configure analysis](configure-analysis.md).
+
+## Step 4: Add your other clusters
+
+[Connect a cluster](connect-a-cluster.md): one at a time from the web interface, or a whole
+fleet with one token and your GitOps tool.
+
+## Other ways to install
+
+Helm is the way to install ARGUS. Two situations change the command.
+
+### No ingress, just trying it
+
+Install without any `--set` options, then open the hub through a port-forward:
+
+```bash
+kubectl -n argus-system port-forward svc/argus-hub 8080:8080
+```
+
+Open `http://localhost:8080`. The hub watches its own cluster; other clusters cannot reach it.
+
+### Gateway API instead of Ingress
+
+Attach the hub to a Gateway you run, instead of setting `ingress.host`:
+
+```bash
+helm install argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.0 \
+  -n argus-system --create-namespace \
+  --set httpRoute.host=argus.example.com \
+  --set 'httpRoute.parentRefs[0].name=<gateway>' \
+  --set 'httpRoute.parentRefs[0].namespace=<gateway-namespace>'
+```
+
+The chart creates an HTTPRoute for the web interface, the API and the agents' connection. The
+Gateway holds the certificate for the hostname (add `--set httpRoute.https=false` for plain
+HTTP), and it must let connections stay open: agents send a heartbeat every 30 seconds.
+
+## An external database
+
+For production, point the hub at a managed PostgreSQL or a CloudNativePG cluster, so the
+database has its own replication, backups and point-in-time recovery. It needs PostgreSQL 16
+with the `pgvector` extension, and two roles: one that owns the schema and runs migrations, and
+`argus_app`, which the hub runs as and which must not bypass row-level security. Give the hub
+both connection strings in one Secret and install with:
+
+```bash
+--set postgres.mode=external \
+--set postgres.external.existingSecret=argus-db \
+--set postgres.external.appPasswordKey=appPassword
+```
+
+The [install guide in the ARGUS repository](https://github.com/nubestack-collab/ARGUS/blob/main/docs/INSTALL.md#external-postgres) has the SQL to
+prepare the database, the Secret's format, and a CloudNativePG example.
+
+!!! warning "The built-in database has no scheduled backups"
+    The hub saves a copy of it before every upgrade, so an upgrade can be
+    [rolled back](upgrade.md#rolling-back). Nothing else is backed up: findings are detected
+    again by the agents, but incident history, the audit log, settings and the hub's own keys
+    (without which every cluster must be added again) are only as safe as the volume they are on.
+
+## Uninstalling
+
+`helm -n argus-system uninstall argus-hub` removes the hub and this cluster's agent but keeps the
+database and its generated passwords, so a reinstall finds its data again. Before reinstalling,
+decommission the old `local` cluster on **Clusters**, so the new agent can connect afresh.
+Deleting the database volume (`data-argus-hub-postgres-0`) removes the data for good.
 
 ## See also
 
 - [Requirements](requirements.md)
-- [Configure analysis](configure-analysis.md)
+- [Upgrade and roll back](upgrade.md)
+- [Network requirements](../reference/network-requirements.md)
 - [Data retention](../administration/retention.md)

@@ -45,13 +45,15 @@ One agent runs in each watched cluster, in its own namespace. It:
 - answers read-only tool calls during an investigation
 - executes approved typed actions, if remediation was enabled for that cluster
 
-The agent dials the hub over a mutual-TLS tunnel and keeps that connection open. Nothing
-inbound to the cluster is required — no ingress, no port forward, no firewall exception for
-traffic entering the cluster.
+The agent dials the hub over a mutual-TLS tunnel and keeps that connection open. The tunnel
+travels as a WebSocket through the hub's own ingress, at the same address as the web
+interface, so the hub needs no second port. Nothing inbound to the cluster is required — no
+ingress, no port forward, no firewall exception for traffic entering the cluster.
 
 Enrolment is outbound too. You create a single-use token in the hub, install the agent with
 it, and the agent presents it on first contact and receives its own client certificate. The
-certificate persists across pod restarts when persistence is enabled.
+certificate is kept in a Secret in the agent's namespace, so it survives restarts. The cluster
+the hub runs in needs no token: the hub chart installs its agent and enrols it automatically.
 
 ## Where the AI runs
 
@@ -63,8 +65,8 @@ restart. Exactly one is active at a time.
 | API endpoint | Any OpenAI-compatible endpoint, including one you host yourself |
 | Agent CLI runner | An isolated runner container beside the hub, driving an agent CLI |
 
-The hub also uses a local embedding model to retrieve related prior analyses. That runs
-alongside the hub and is not the reasoning model.
+A self-hosted model is added the same way, as an API endpoint: ARGUS does not install or run
+models itself.
 
 ## What is stored
 
@@ -72,11 +74,12 @@ alongside the hub and is not the reasoning model.
 |---|---|
 | Incidents, findings, analyses, approvals, executions, audit events | The hub's PostgreSQL database |
 | Repository credentials and provider keys | The same database, encrypted |
-| The agent's client certificate and cluster identity | A small volume in the watched cluster |
+| The agent's client certificate and cluster identity | A Secret in the agent's namespace, in the watched cluster |
 | Secret contents | Nowhere — they are never read |
 
-For anything you care about, use an external PostgreSQL instance with backups rather than
-a database bundled into the deployment.
+The bundled database is dumped before each upgrade so the upgrade can be rolled back, but it is
+not backed up on a schedule. For anything you care about, use an external PostgreSQL instance
+with its own backups.
 
 ## See also
 

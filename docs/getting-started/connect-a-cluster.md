@@ -1,41 +1,58 @@
 # Connect a cluster
 
-Connecting a cluster takes four steps: create a token, install the agent, accept the
-cluster, confirm the heartbeat. The hub never needs your kubeconfig — the agent dials out.
+The cluster the hub runs in is already connected: it appears on **Clusters** as `local` a
+minute after the hub is installed. This page connects your other clusters. The hub never needs
+their kubeconfigs — each agent dials out to the hub.
 
-## 1. Create an enrolment token
+Every cluster runs one agent, installed from the agent chart. Choose how to enrol it:
+
+| You are connecting | Use |
+|---|---|
+| One cluster | A single-use token from **Enroll a cluster** |
+| Many clusters, or clusters managed by GitOps | One **fleet token** shared by all of them |
+
+## One cluster
+
+### 1. Create an enrolment token
 
 On **Clusters**, select **Enroll a cluster**. The token is single-use and short-lived: it
 authorises exactly one agent install.
 
-## 2. Install the agent
+### 2. Install the agent
 
-Install the agent chart into the cluster you want watched, in its own namespace, passing
-the hub's API address and the token. The **Enroll a cluster** dialog shows the exact
-command with the address and token already filled in, ready to copy.
+The **Enroll a cluster** dialog shows the exact commands, with the hub's address and the token
+already filled in, ready to copy. Run them against the cluster you want watched:
 
-Two values have to be right:
+```bash
+kubectl create namespace argus-system
+kubectl -n argus-system create secret generic argus-enrollment-token --from-literal=token=<token>
+helm install argus-agent oci://registry-1.docker.io/nubestack/argus-agent-chart --version <version> \
+  -n argus-system --set namespace.create=false \
+  --set hub.apiUrl=<hub-address> \
+  --set enrollment.tokenSecretRef.name=argus-enrollment-token \
+  --set displayName=<cluster-name>
+```
 
-| Value | Requirement |
-|---|---|
-| Hub API address | Reachable from inside the cluster. Not `localhost` for a remote cluster |
-| Persistence | Leave enabled, so the agent keeps its certificate across pod restarts |
+The token goes into a Secret rather than onto the `helm` command line, so it is never stored
+in the Helm release's values, where anyone who can read the release could see it. The agent
+presents the token on first contact and receives its own client certificate in return; the
+token is then spent.
 
-The agent presents the token on first contact and receives its own client certificate in
-return. The token is then spent.
+The hub's address must be reachable from inside the cluster — not `localhost`. Check it from a
+pod there:
 
-!!! tip "One command instead of several"
-    `argusctl cluster add --context <kube-context>` drives the whole sequence — issue a
-    token, install the chart, wait for check-in, accept the cluster — from the command
-    line.
+```bash
+kubectl run argus-probe --rm -i --restart=Never --image=busybox:1.36 -- \
+  wget -qO- -T 5 <hub-address>/healthz
+```
 
-## 3. Accept the cluster
+### 3. Accept the cluster
 
 A newly enrolled cluster appears as pending. Accepting it is what allows its tunnel to
 carry data. Until then the agent is connected but ignored, which gives you a deliberate
 moment to confirm the cluster is the one you meant.
 
-## 4. Confirm the heartbeat
+### 4. Confirm the heartbeat
 
 The cluster becomes **Active** once its tunnel is up and it is reporting. The **Clusters**
 page shows state, agent version, open incident count and last heartbeat.
@@ -48,6 +65,32 @@ reporting.*
 
 Findings normally start arriving within a minute or two. A healthy cluster with nothing
 wrong produces no incidents, which is the correct outcome rather than a sign of a problem.
+
+## Many clusters: a fleet token
+
+A fleet token is one token that many clusters can enrol with, so the same agent configuration
+can be rolled out everywhere by your GitOps tool.
+
+1. On **Clusters**, select **Fleet tokens**, then **Issue fleet token**. Choose how long it is
+   valid (up to a year) and how many clusters may use it. Tick **Accept automatically** to skip
+   accepting each cluster by hand; the clusters are then accepted on your behalf, and the audit
+   log says so. This needs permission to accept clusters.
+2. Put the token in every cluster as the Secret `argus-system/argus-enrollment-token`, key
+   `token`, with your secret manager — External Secrets, Sealed Secrets, Vault. Never commit it
+   in plain text.
+3. Deploy the agent chart to every cluster with the same values as above, minus the token. The
+   [ARGUS repository](https://github.com/nubestack-collab/ARGUS/tree/main/deploy/examples) has ready-made examples: an Argo CD ApplicationSet that
+   installs the agent on every cluster Argo CD manages, named after the cluster, and a Flux
+   `HelmRelease`.
+
+The token is shown once. Its row under **Fleet tokens** shows how many clusters have used it;
+revoking it stops further enrolments, and clusters already enrolled stay connected. The token
+the hub created for its own cluster is listed there too, already used.
+
+## Upgrading an agent
+
+See [Upgrade and roll back](upgrade.md#upgrade-the-other-clusters). An upgrade keeps the
+cluster's enrolment.
 
 ## Whether the agent may change anything
 
@@ -66,17 +109,24 @@ Enabling remediation means choosing a scope. There are exactly two, and you must
 **Named namespaces — preferred:**
 
 ```bash
-helm --kube-context <cluster-context> upgrade --install argus-agent <chart> \
-  --namespace argus-system --reuse-values \
+helm --kube-context <cluster-context> upgrade argus-agent \
+  oci://registry-1.docker.io/nubestack/argus-agent-chart --version <version> \
+  --namespace argus-system --reset-then-reuse-values \
   --set remediate.enabled=true \
   --set 'remediate.namespaces={payments,checkout}'
 ```
 
+**Node actions.** Cordon and drain need a second switch, `remediate.nodeOps.enabled=true`,
+on top of either scope. It grants patching nodes and creating evictions cluster-wide, with an
+admission policy that lets the remediation identity change only `spec.unschedulable` on a
+Node. See [Remediation actions](../reference/remediation-actions.md#node-actions).
+
 **The whole cluster:**
 
 ```bash
-helm --kube-context <cluster-context> upgrade --install argus-agent <chart> \
-  --namespace argus-system --reuse-values \
+helm --kube-context <cluster-context> upgrade argus-agent \
+  oci://registry-1.docker.io/nubestack/argus-agent-chart --version <version> \
+  --namespace argus-system --reset-then-reuse-values \
   --set remediate.enabled=true \
   --set remediate.allNamespaces=true
 ```
@@ -97,6 +147,16 @@ Prefer named namespaces. Cluster-wide scope includes `kube-system` and every oth
 namespace you did not think about, so treat it as a deliberate decision rather than the
 convenient option.
 
+**The hub's own cluster** has its agent installed by the hub chart, so set the same options on
+the hub instead, with a `localAgent.` prefix:
+
+```bash
+helm upgrade argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version <version> \
+  -n argus-system --reset-then-reuse-values \
+  --set localAgent.remediate.enabled=true \
+  --set 'localAgent.remediate.namespaces={payments,checkout}'
+```
+
 ### What enabling it actually creates
 
 Turning it on provisions a **second, separate identity** in the target cluster, distinct
@@ -113,8 +173,9 @@ Two consequences worth knowing:
 ### Removing write access
 
 ```bash
-helm --kube-context <cluster-context> upgrade argus-agent <chart> \
-  --namespace argus-system --reuse-values --set remediate.enabled=false
+helm --kube-context <cluster-context> upgrade argus-agent \
+  oci://registry-1.docker.io/nubestack/argus-agent-chart --version <version> \
+  --namespace argus-system --reset-then-reuse-values --set remediate.enabled=false
 ```
 
 The identity and its permissions are removed. The agent keeps detecting and investigating.
@@ -137,8 +198,9 @@ If the cluster runs Prometheus, point the agent at it to add workload metrics. O
 default:
 
 ```bash
-helm --kube-context <cluster-context> upgrade argus-agent <chart> \
-  --namespace argus-system --reuse-values \
+helm --kube-context <cluster-context> upgrade argus-agent \
+  oci://registry-1.docker.io/nubestack/argus-agent-chart --version <version> \
+  --namespace argus-system --reset-then-reuse-values \
   --set metrics.prometheusService.namespace=monitoring \
   --set metrics.prometheusService.name=prometheus-operated \
   --set metrics.prometheusService.port=9090

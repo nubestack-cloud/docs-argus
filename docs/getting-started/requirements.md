@@ -3,57 +3,57 @@
 What you need before installing. The hub is modest; the watched clusters need almost
 nothing.
 
-## Hub
+## The hub's cluster
 
-| Resource | Evaluation | Production |
-|---|---|---|
-| CPU | 2 cores | 4 cores |
-| Memory | 4 GB | 8 GB |
-| Disk | 20 GB | Sized for incident retention, plus database backups |
-| PostgreSQL | Bundled is fine | External, with backups |
+| Requirement | Detail |
+|---|---|
+| Kubernetes | 1.29 or later (1.30 or later to allow remediation) |
+| Helm | 3.8 or later, on the machine you install from |
+| Ingress | An ingress controller (or a Gateway API Gateway), and a hostname for the hub that your browser and your other clusters can reach. cert-manager is optional, for HTTPS |
+| Storage | A default storage class, or one you name at install, for a 10 GB database volume. Plan about 0.5–1 GB per busy watched cluster |
+| CPU and memory | The hub and its database request about 0.5 core and 1 GiB together, and may use up to 4 GiB; the Claude Code or Codex runner adds about half as much again |
 
 Run a single hub instance. Agent connections are held in memory, so the hub does not scale
-horizontally.
+horizontally; the chart enforces one replica.
 
-If you use the local embedding model for related-analysis retrieval, allow roughly 1.5 GB
-of disk for the model itself.
+!!! note "The bundled database is not backed up on a schedule"
+    It is dumped before each upgrade so the upgrade can be rolled back. For history you must
+    keep, use an external PostgreSQL with its own backups. See
+    [Install the hub](install.md#storage).
 
 ## Watched clusters
 
 | Requirement | Detail |
 |---|---|
-| Kubernetes | 1.25 or later |
-| Namespace | One namespace for the agent, created at install |
-| Resources | Approximately 100m CPU and 128 MiB memory per agent |
-| Persistence | A small volume, so the agent keeps its certificate across restarts |
-| Permissions | Cluster-wide read at install; write only in namespaces you name |
+| Kubernetes | 1.29 or later (1.30 or later to allow remediation) |
+| Namespace | `argus-system`, for the agent |
+| Resources | About 100m CPU and 256 MiB memory per agent; its limit (1 GiB) covers about 5,000 pods |
+| Storage | None. The agent keeps its identity in a Secret in its own namespace |
+| Permissions | Cluster-wide read at install; write only in namespaces you name, if you allow it |
+| Network | Outbound to the hub's hostname. Nothing connects into the cluster |
 
 ## Network
 
-The agent dials the hub. Nothing needs to connect inbound to a watched cluster.
+The agent dials the hub, at the same hostname as the web interface. Nothing needs to connect
+inbound to a watched cluster.
 
 | From | To | Purpose |
 |---|---|---|
-| Operator browser | Hub HTTP port | Web interface and API |
-| Cluster agent | Hub tunnel port | Mutual-TLS tunnel, held open |
-| Cluster agent | Hub HTTP port | Enrolment, before the tunnel exists |
+| Operator browser | The hub's hostname | Web interface and API |
+| Cluster agent | The hub's hostname | Enrolment, then the agent tunnel, held open |
 | Hub | AI provider | Investigation, unless the provider is local |
 | Hub | Repository host | Pull requests, if you register repositories |
 
-The hub's tunnel address must be reachable from every watched cluster, and must be the
-address you configure as the tunnel's public endpoint — agents pin the address they
-enrolled against.
-
-!!! warning "The tunnel is not an HTTP ingress"
-    Expose the tunnel port as its own service. Putting it behind an HTTP ingress or a
-    TLS-terminating proxy breaks mutual TLS, which is the agent's only credential.
+See [Network requirements](../reference/network-requirements.md) for how the tunnel passes
+through your ingress, and for networks that need a separate tunnel address.
 
 ## AI provider
 
 One of:
 
-- an OpenAI-compatible API endpoint and a key for it, hosted by anyone including you
-- an agent CLI runner deployed beside the hub, with credentials for the CLI it drives
+- an OpenAI-compatible API endpoint and a key for it, hosted by anyone including you. A model
+  you host yourself is yours to run: ARGUS does not install models
+- Claude Code or Codex, which the hub chart runs beside the hub when you give it a credential
 
 A model with a large context window and strong tool-calling behaviour produces markedly
 better investigations than a small one.

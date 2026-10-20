@@ -43,6 +43,15 @@ automation and model spend.
 Each card is refreshed by the hub in the background, says how old its figures are, and
 draws the worst clusters first with the rest summed.
 
+When the same application runs different versions on different clusters, **Delivery &
+agents** adds one line saying how many; open it for each application and the version on each
+cluster, linked to that cluster's GitOps or Helm tab. An application is an Argo CD
+Application or Flux object deploying the same repository and path (or carrying the same
+`argus.io/app` annotation) on several clusters. Plain Helm releases are not compared: the
+agent sees only a release's revision number, which counts per cluster, not its chart
+version. Failing releases and applications already show as red squares in the same card,
+and open incidents.
+
 ## See also
 
 - [The cluster page](cluster-page.md)

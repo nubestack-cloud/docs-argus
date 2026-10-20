@@ -26,7 +26,10 @@ For an object an application manages, the object panel's GitOps tab shows two th
 side: Argo CD's own verdict on that object (synced or out of sync, from the application's
 status), and the fields that differ from its last-applied configuration. They can disagree —
 Argo CD ignores fields it has been told to — so neither overrides the other. An object
-applied server-side or by Helm has no last-applied configuration, so only the verdict shows.
+applied server-side or by Helm has no last-applied configuration; for those, the field list
+comes from Argo CD's own diff when the agent chart is given Argo CD's address and a read-only
+token (`gitops.argocd.url` and `gitops.argocd.tokenSecretRef`). Without them, only the
+verdict shows.
 
 On an incident about a GitOps-owned object, **Request Argo refresh** or
 **Request Flux reconcile** asks the controller to look again. That is a request to the

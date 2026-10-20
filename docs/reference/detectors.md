@@ -9,6 +9,12 @@ Three detectors run in every connected cluster. Each can be disabled under
 | Pod status conditions | `CrashLoopBackOff`, `ImagePullBackOff`, `ErrImagePull`, `OOMKilled`, pods stuck `Pending` |
 | Sweep detector | Sustained conditions, evaluated periodically |
 
+Warning events from a policy engine's audit of objects already in the cluster (Kyverno's
+background scan, Gatekeeper's audit) are recorded as risks and never open an incident:
+nothing has failed, and the same results appear on the object panel's **Policy** tab.
+A policy that blocks a change at admission still surfaces through the workload's own
+failure, such as `FailedCreate`.
+
 The sweep detector also covers built-in checks that are not individually listed: replica
 shortfalls, volume claims that never bind, failed jobs, nodes that are not ready or under
 pressure, blocked autoscalers, and services with no ready endpoints.
@@ -96,6 +102,22 @@ cluster's pages, but not in the incident queue.
 | Check | Fires when | Opens an incident |
 |---|---|---|
 | `ScheduleNotRunning` | A CronJob, Velero schedule or CloudNativePG scheduled backup has missed two runs of its own schedule, plus 15 minutes, since it last succeeded (or since it was created). Suspended and paused schedules are skipped | Yes |
+
+### Batch and AI workloads
+
+Read only on clusters that have the resource installed and grant the agent read access to
+it. Each says which part failed, in the controller's own terms.
+
+| Check | Fires when | Opens an incident |
+|---|---|---|
+| `JobSetFailed` | A JobSet failed, naming the replicated job and reason | Yes |
+| `RayJobFailed` | A RayJob failed, with its job and deployment status | Yes |
+| `RayServiceNotReady` | A RayService is not ready | Yes |
+| `RayClusterFailed` | A RayCluster is in the failed state | Yes |
+| `InferenceServiceNotReady` | A KServe InferenceService is not ready, naming the part (predictor, transformer, explainer or ingress) | Yes |
+| `ScaledObjectNotReady` | A KEDA ScaledObject cannot scale | Yes |
+| `ScaledObjectFallback` | A KEDA ScaledObject is running its fallback replica count because its scaler is failing | Yes |
+| `KueueWorkloadEvicted` | A Kueue Workload was evicted because its pods did not become ready in time | Yes |
 
 ## Volume controls
 

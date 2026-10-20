@@ -17,6 +17,8 @@ context can raise it but never lower it below the floor.
 | Create resource | Creates a limited, named object | Medium | No | Never |
 | Delete resource | Deletes a named object | High | No | Never |
 | Open pull request | Opens a pull request against the owning repository | Low | Not applicable | Eligible |
+| Cordon node | Marks a node unschedulable, or schedulable again | Medium | Yes | Never |
+| Drain node | Evicts a node's pods through the eviction API | High | No | Never |
 
 Separately from plans, an incident about a GitOps-owned object offers **Request Argo
 refresh** or **Request Flux reconcile**. These ask the controller to look again; they change
@@ -30,9 +32,26 @@ proposed.
 | Route | Permitted |
 |---|---|
 | Pull request | Open pull request, delete resource |
-| In place | Scale, restart, patch limits, revert image, annotate, label, create, delete |
+| In place | Scale, restart, patch limits, revert image, annotate, label, create, delete; cordon and drain on a Node incident |
 | Pull request and in place | Both sets |
 | Guidance | None |
+
+## Node actions
+
+Cordon and drain are offered only for an incident about a Node, and only on a cluster
+whose agent chart sets `remediate.nodeOps.enabled` as well as `remediate.enabled`. They
+need their own opt-in because neither permission can be narrowed by name: patching nodes
+reaches every node, and creating evictions reaches every pod.
+
+- **Cordon** changes `spec.unschedulable` and nothing else. An admission policy installed
+  with the chart refuses any other change to a Node from the remediation identity, including
+  labels, annotations and taints. Undo uncordons.
+- **Drain** goes through the eviction API, so disruption budgets hold. DaemonSet, mirror
+  and finished pods stay. Before evicting anything it refuses the whole drain if a pod has
+  no controller (nothing would recreate it) or holds `emptyDir` data, unless the plan
+  allows deleting that data. A pod whose eviction a disruption budget refuses stays where
+  it is and is reported as blocked; it is not retried. The object panel's **Drain impact**
+  tab shows the same picture before anyone proposes a drain.
 
 ## Reversibility
 

@@ -104,6 +104,7 @@ nav:
       - Configure analysis: getting-started/configure-analysis.md
       - Connect a cluster: getting-started/connect-a-cluster.md
       - Your first incident: getting-started/first-incident.md
+      - Upgrade and roll back: getting-started/upgrade.md
   - Your fleet:
       - fleet/index.md
       - The overview: fleet/overview.md

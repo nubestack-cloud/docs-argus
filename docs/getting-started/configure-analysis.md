@@ -31,9 +31,12 @@ restart.*
 
 | Field | Value |
 |---|---|
-| Runner URL | The address of the runner service beside the hub |
-| Agent | Which CLI the runner should drive |
-| Runner token | The shared token the runner expects |
+| Runner URL | The address of the runner service beside the hub: `http://argus-hub-cli-runner:8090` when the hub chart deploys it |
+| Agent | Which CLI the runner should drive: `claude` or `codex` |
+| Runner token | The shared token the runner expects. Leave it blank when the hub chart deployed the runner: the hub already has it |
+
+The hub chart deploys the runner when you give it a model credential; see
+[Install the hub](install.md#ai-claude-code-or-codex).
 
 ## Test before you rely on it
 

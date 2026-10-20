@@ -37,7 +37,7 @@ rather than in effect.
 - The list holds at most 64 entries.
 
 The list applies to AI providers and Git repositories only. The notification webhooks, your
-identity provider and the embedding model server may already be internal without an entry;
+identity provider may already be internal without an entry;
 metadata addresses are refused for all of them regardless.
 
 ## See also

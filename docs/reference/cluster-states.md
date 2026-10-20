@@ -8,7 +8,7 @@ A cluster's state describes its agent connection, not the health of the workload
 | Pending approval | The agent connected and is not yet accepted | Accept it, if it is the cluster you meant |
 | Active | Connected and reporting | Nothing |
 | Degraded | Connected, but heartbeats are late or incomplete | Check agent logs and network stability |
-| Disconnected | Not heartbeating | Check the agent pod, the network, and the tunnel address |
+| Disconnected | Not heartbeating | Check the agent pod and that the cluster can reach the hub's address |
 | Incompatible version | The agent is too old or too new for this hub | Upgrade the agent, or the hub |
 | Rejected | Refused at acceptance | Nothing, unless you meant to accept it |
 | Archived | Removed from the active fleet, history kept | Nothing. Its agent is refused if it connects |

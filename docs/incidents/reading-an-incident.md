@@ -116,6 +116,23 @@ and the card says so.*
 After a fix lands, ARGUS watches for the symptom to come back before it closes the incident.
 This phase says what it is waiting for. See [Validation](../remediation/validation.md).
 
+## Resource usage
+
+For an incident on a pod or workload, **Resource usage** charts CPU, memory, restarts and
+throttling around the time it opened. When the cluster's Prometheus holds request telemetry
+for the workload, from Istio or Grafana Beyla, it also charts request rate, the share of
+requests that failed with a 5xx, and p95 latency. Without either, it says so instead of
+drawing an empty chart that would read as no traffic.
+
+## Traffic
+
+On a cluster with a traffic source, an incident about a workload has a **Traffic** tab: who
+calls it, the workloads that feel this incident, and what it calls, a dependency that may be
+its cause. Each line gives the rate over the last 15 minutes and the change against an hour
+earlier, failing flows first; a caller that stopped is kept and marked. Without a traffic
+source the tab says so, rather than showing an empty list that would read as nobody calling
+it.
+
 ## Facts and history
 
 The side column holds the facts — cluster, owner, workload, first seen, when it was

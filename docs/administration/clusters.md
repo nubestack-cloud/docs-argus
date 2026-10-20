@@ -72,17 +72,19 @@ affect the agent's identity or its certificate.
 ## Disconnected clusters
 
 A cluster stops heartbeating when the agent pod is gone, the network is broken, or the
-tunnel address it enrolled against is no longer reachable. The cluster becomes
-disconnected; its incidents stay.
+hub's address is no longer reachable from it. The cluster becomes disconnected; its
+incidents stay.
 
-An agent that keeps its volume across restarts reconnects on its own with the same
-identity. An agent that loses its volume has lost its certificate and needs enrolling
-again.
+The agent keeps its identity in a Secret in its own namespace, so restarts, rescheduling and
+upgrades reconnect on their own with the same identity. Uninstalling the agent deletes that
+identity: a reinstalled agent enrols again.
 
-!!! warning "Changing the hub's tunnel address"
-    Agents pin the address they enrolled against. Changing the hub's tunnel endpoint or its
-    certificate names means existing agents can no longer verify it, and they will
-    reconnect unsuccessfully until the address is restored or they are re-enrolled.
+!!! warning "Changing the hub's address"
+    Agents keep the address they enrolled against. If the hub moves to a new hostname, upgrade
+    each agent with the new `hub.apiUrl` and `hub.tunnelEndpoint`. With a
+    [separate tunnel address](../reference/network-requirements.md#a-separate-tunnel-address),
+    keep the old name in the tunnel certificate until every agent has moved, or agents cannot
+    verify the hub.
 
 ## Archiving
 
