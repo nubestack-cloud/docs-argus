@@ -18,20 +18,45 @@ Every cluster runs one agent, installed from the agent chart. Choose how to enro
 On **Clusters**, select **Enroll a cluster**. The token is single-use and short-lived: it
 authorises exactly one agent install.
 
+![The Enroll a cluster dialog: a token lifetime, "Standard — expires in 1 hour, one cluster",
+and a Generate token button](../assets/images/49-enroll-dialog.png){ width="480" }
+
+*Choose how long the token stays valid, then **Generate token**. Every lifetime produces the
+same install command.*
+
 ### 2. Install the agent
 
-The **Enroll a cluster** dialog shows the exact commands, with the hub's address and the token
-already filled in, ready to copy. Run them against the cluster you want watched:
+The **Enroll a cluster** dialog shows the exact commands, with the hub's address, the release
+and the token already filled in, ready to copy. Run them against the cluster you want watched:
+
+![The generated commands: create the argus-system namespace, put the token in a Secret, and helm
+install the agent chart at version 0.2.0 with the hub's address](../assets/images/50-enroll-command.png){ width="480" }
+
+*The commands as the dialog shows them; the token is shortened here. **Copy** takes the whole
+block.*
+
+They have this shape:
 
 ```bash
-kubectl create namespace argus-system
-kubectl -n argus-system create secret generic argus-enrollment-token --from-literal=token=<token>
-helm install argus-agent oci://registry-1.docker.io/nubestack/argus-agent-chart --version <version> \
-  -n argus-system --set namespace.create=false \
+kubectl create namespace argus-system --dry-run=client -o yaml | kubectl apply -f -
+kubectl create secret generic argus-enrollment-token -n argus-system \
+  --from-literal=token=<token> --dry-run=client -o yaml | kubectl apply -f -
+helm install argus-agent oci://registry-1.docker.io/nubestack/argus-agent-chart \
+  --version <version> \
+  --namespace argus-system \
+  --set namespace.create=false \
   --set hub.apiUrl=<hub-address> \
-  --set enrollment.tokenSecretRef.name=argus-enrollment-token \
-  --set displayName=<cluster-name>
+  --set enrollment.tokenSecretRef.name=argus-enrollment-token
 ```
+
+Add `--set displayName=<name>` to choose how the cluster is labelled in ARGUS.
+
+!!! warning "Moving a cluster to a new hub"
+    If the cluster already runs an agent for another hub, remove it first:
+    `helm -n argus-system uninstall argus-agent`, then
+    `kubectl -n argus-system delete secret argus-agent-identity --ignore-not-found`. Otherwise the
+    install stops with "cannot reuse a name that is still in use", and the old agent keeps an
+    identity the new hub cannot verify.
 
 The token goes into a Secret rather than onto the `helm` command line, so it is never stored
 in the Helm release's values, where anyone who can read the release could see it. The agent
@@ -194,8 +219,12 @@ approval can actually be carried out. See [Clusters](../administration/clusters.
 
 ## Connecting Prometheus
 
-If the cluster runs Prometheus, point the agent at it to add workload metrics. Off by
-default:
+If the cluster runs Prometheus, the agent connects to it by itself when it is installed or
+upgraded: Rancher monitoring, kube-prometheus-stack, a plain Prometheus server, a Thanos query
+or a VictoriaMetrics single node. The install notes name the one it found. A Prometheus
+started after the agent is picked up at the agent's next `helm upgrade`.
+
+To choose a different one, or when there is more than one:
 
 ```bash
 helm --kube-context <cluster-context> upgrade argus-agent \
@@ -206,7 +235,19 @@ helm --kube-context <cluster-context> upgrade argus-agent \
   --set metrics.prometheusService.port=9090
 ```
 
-The agent reaches Prometheus through the Kubernetes API server, and is granted read access
+For the hub's own cluster (`local`), upgrade the hub instead, with a `localAgent.` prefix. The
+cluster's **Traffic** and **Cost** tabs show the Prometheus they found and these values ready to
+copy:
+
+```bash
+helm upgrade argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version <version> \
+  --namespace argus-system --reset-then-reuse-values \
+  --set localAgent.metrics.prometheusService.namespace=cattle-monitoring-system \
+  --set localAgent.metrics.prometheusService.name=rancher-monitoring-prometheus
+```
+
+To turn metrics off, set `metrics.autoDetect=false`. The agent reaches Prometheus through the
+Kubernetes API server, and is granted read access
 to that one Service and nothing else. With it connected:
 
 | Gains | Where |
