@@ -36,7 +36,7 @@ restart.*
 | Runner token | The shared token the runner expects. Leave it blank when the hub chart deployed the runner: the hub already has it |
 
 The hub chart deploys the runner when you give it a model credential; see
-[Install the hub](install.md#ai-claude-code-or-codex).
+[Install the hub](install.md#claude-code-or-codex).
 
 ## Test before you rely on it
 

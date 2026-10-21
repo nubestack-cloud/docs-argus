@@ -6,12 +6,12 @@ things before you connect anything real.
 ![The ARGUS sign-in page in the Aperture style: the ARGUS eye on the left, and the email and
 password form on the right](../assets/images/00-login.png)
 
-*The sign-in page. Configured single sign-on providers appear as buttons under the password
-form; until one is configured, the buttons are shown disabled. The figures across the top left
-are part of the design, not read from your installation.*
+*The sign-in page. Each single sign-on provider you configure appears as a button under the
+password form; with none configured, there are none. The page shows nothing about your
+installation, because anyone who can reach it sees it before signing in.*
 
-The page comes in three styles — **Aperture**, the default, **Sentinel** and **Telemetry** —
-chosen for the whole installation under **Settings → Appearance**.
+The page comes in two styles — **Aperture**, the default, and **Sentinel** — chosen for the
+whole installation under **Settings → Appearance**.
 
 ## Sign in
 

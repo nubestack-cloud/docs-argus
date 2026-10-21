@@ -19,7 +19,7 @@ horizontally; the chart enforces one replica.
 !!! note "The bundled database is not backed up on a schedule"
     It is dumped before each upgrade so the upgrade can be rolled back. For history you must
     keep, use an external PostgreSQL with its own backups. See
-    [Install the hub](install.md#storage).
+    [Install the hub](install.md#before-you-start).
 
 ## Watched clusters
 
