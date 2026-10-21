@@ -12,13 +12,19 @@ So one `helm install` gives you a hub that is already watching the cluster it ru
 
 You need:
 
-- a Kubernetes cluster for the hub, version 1.29 or later;
+- a Kubernetes cluster for the hub, version 1.29 or later (1.30 or later if ARGUS may change
+  anything). Any distribution works, OpenShift included: the hub finds your storage and ingress
+  controller, and adapts to OpenShift's security policy, by itself;
 - Helm 3.8 or later on your machine;
 - an ingress controller in that cluster, or a Gateway API Gateway (see
   [Gateway API](#gateway-api-instead-of-ingress));
 - a hostname for the hub, such as `argus.example.com`, that your browser and your other
   clusters can reach;
 - optionally, cert-manager, to get HTTPS without handling certificates yourself.
+
+The database needs a volume. The hub uses your cluster's default storage class, or one of its
+storage classes if none is the default. On a cluster with no storage at all it still installs, but
+the database is temporary and loses its data when its pod restarts: fine for a trial only.
 
 !!! tip "No DNS name to spare?"
     `argus.<ingress-ip>.nip.io` points at your ingress controller's IP address with no DNS
@@ -48,10 +54,16 @@ helm install argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --ve
 | Option | What to put |
 |---|---|
 | `ingress.host` | **Required.** The hub's hostname |
-| `ingress.clusterIssuer` | Your cert-manager ClusterIssuer, for HTTPS. No cert-manager? Leave it out, and either add `--set ingress.tls.enabled=true --set ingress.tls.secretName=<your TLS Secret>`, or use plain HTTP for a trial |
-| `ingress.className` | Only if the cluster has more than one ingress controller |
+| `ingress.clusterIssuer` | The name of a cert-manager ClusterIssuer in your cluster (`kubectl get clusterissuer`), for HTTPS. The install stops if there is none by that name. No cert-manager? Leave it out and add `--set ingress.tls.enabled=true --set ingress.tls.secretName=<your TLS Secret>` instead. **Plain HTTP, for a trial:** leave out both; the hub is then at `http://<host>`, and agents still encrypt their own connection inside it |
+| `ingress.className` | Only to choose a specific ingress controller. Without it, the hub uses the default one, or one of your cluster's ingress controllers if none is the default |
 | `postgres.bundled.persistence.size` | Only if you need more than 10Gi, for example `50Gi` |
-| `postgres.bundled.persistence.storageClass` | Only if the cluster has no default storage class, or you want a specific one |
+| `postgres.bundled.persistence.storageClass` | Only to choose a specific storage class. Without it, the hub uses the cluster's default, or one of its storage classes if there is no default |
+
+The chart creates one Ingress for the web interface, the API and the agents' connection. Your
+ingress controller handles HTTPS with the certificate cert-manager issues (or your Secret), and it
+must keep the agents' connections open: the chart configures ingress-nginx for this. With another
+controller, or a load balancer in front of it, allow idle connections of at least 60 seconds —
+agents send a heartbeat every 30.
 
 Wait for it to start. This takes about a minute, mostly downloading images:
 
@@ -83,26 +95,49 @@ ARGUS uses an AI model to investigate incidents. Pick one:
 
 ### Claude Code or Codex
 
-Save the credential to a file without showing it on screen, then upgrade the hub with it:
+The hub runs these for you; it needs only their credential. Neither has to be installed on the
+machine you run `helm` from.
+
+Put the credential in a file there, without it showing on screen or in your shell history. The
+command asks you to paste it, and nothing appears as you paste:
 
 ```bash
 mkdir -p ~/.argus && chmod 700 ~/.argus
-read -rs TOKEN && printf '%s' "$TOKEN" > ~/.argus/model-credential && unset TOKEN && chmod 600 ~/.argus/model-credential
+printf 'Paste the credential, then press Enter: '; read -rs TOKEN; echo
+printf '%s' "$TOKEN" > ~/.argus/model-credential && unset TOKEN && chmod 600 ~/.argus/model-credential
+```
 
+!!! info "How to get the credential"
+    On any machine with a browser:
+
+    - **Claude subscription (Pro or Max):** on a machine with Claude Code
+      (`npm install -g @anthropic-ai/claude-code`), run `claude setup-token`, sign in in the
+      browser it opens, and copy the token it prints. It starts `sk-ant-oat01-`.
+    - **Anthropic API key:** [console.anthropic.com](https://console.anthropic.com/) →
+      **API keys** → **Create key**. It starts `sk-ant-api03-`.
+    - **Codex:** an OpenAI API key, from
+      [platform.openai.com/api-keys](https://platform.openai.com/api-keys) →
+      **Create new secret key**. It starts `sk-`.
+
+Then upgrade the hub with it. For a Claude subscription:
+
+```bash
 helm upgrade argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.0 \
   -n argus-system --reset-then-reuse-values \
   --set-file cliRunner.modelCredential.claudeCodeOauthToken=$HOME/.argus/model-credential \
   --set cliRunner.authMode=subscription
 ```
 
-That example is for a Claude subscription. For the others, use:
+For the others, swap the `--set-file` option:
 
 | You have | Option |
 |---|---|
-| A Claude subscription | `cliRunner.modelCredential.claudeCodeOauthToken`, plus `cliRunner.authMode=subscription` |
+| A Claude subscription | `cliRunner.modelCredential.claudeCodeOauthToken`, plus `--set cliRunner.authMode=subscription` |
 | An Anthropic API key | `cliRunner.modelCredential.anthropicApiKey` |
 | An OpenAI API key (Codex) | `cliRunner.modelCredential.openaiApiKey` |
 | The credential in a Secret already | `cliRunner.modelCredential.existingSecret`, with key `CLAUDE_CODE_OAUTH_TOKEN`, `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` |
+
+Once the upgrade is done, delete the file: `rm ~/.argus/model-credential`.
 
 !!! warning "Never pass a credential with plain `--set`"
     It would be saved in your shell history. Use `--set-file`, or a Secret.
@@ -159,12 +194,13 @@ both connection strings in one Secret and install with:
 --set postgres.external.appPasswordKey=appPassword
 ```
 
-The [install guide in the ARGUS repository](https://github.com/nubestack-collab/ARGUS/blob/main/docs/INSTALL.md#external-postgres) has the SQL to
+The [install guide in the ARGUS repository](https://github.com/nubestack-collab/argus/blob/main/docs/INSTALL.md#external-postgres) has the SQL to
 prepare the database, the Secret's format, and a CloudNativePG example.
 
-!!! warning "The built-in database has no scheduled backups"
-    The hub saves a copy of it before every upgrade, so an upgrade can be
-    [rolled back](upgrade.md#rolling-back). Nothing else is backed up: findings are detected
+!!! warning "The built-in database has no backups"
+    Copy it off the cluster before every upgrade (one command, in [Upgrade and roll
+    back](upgrade.md#back-up-first)); that copy is also how an upgrade is rolled back. Nothing is
+    backed up for you: findings are detected
     again by the agents, but incident history, the audit log, settings and the hub's own keys
     (without which every cluster must be added again) are only as safe as the volume they are on.
 

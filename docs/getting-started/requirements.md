@@ -7,19 +7,19 @@ nothing.
 
 | Requirement | Detail |
 |---|---|
-| Kubernetes | 1.29 or later (1.30 or later to allow remediation) |
+| Kubernetes | 1.29 or later (1.30 or later to allow remediation), any conformant distribution, OpenShift included |
 | Helm | 3.8 or later, on the machine you install from |
 | Ingress | An ingress controller (or a Gateway API Gateway), and a hostname for the hub that your browser and your other clusters can reach. cert-manager is optional, for HTTPS |
-| Storage | A default storage class, or one you name at install, for a 10 GB database volume. Plan about 0.5–1 GB per busy watched cluster |
+| Storage | Any storage class, for a 10 GB database volume: the hub uses the default one, or one of your cluster's if none is the default. Without any, the database is temporary (fine for a trial). Plan about 0.5–1 GB per busy watched cluster |
 | CPU and memory | The hub and its database request about 0.5 core and 1 GiB together, and may use up to 4 GiB; the Claude Code or Codex runner adds about half as much again |
 
 Run a single hub instance. Agent connections are held in memory, so the hub does not scale
 horizontally; the chart enforces one replica.
 
-!!! note "The bundled database is not backed up on a schedule"
-    It is dumped before each upgrade so the upgrade can be rolled back. For history you must
-    keep, use an external PostgreSQL with its own backups. See
-    [Install the hub](install.md#before-you-start).
+!!! note "The bundled database has no backups"
+    Copy it off the cluster before each upgrade (one command, in
+    [Upgrade and roll back](upgrade.md#back-up-first)). For history you must keep, use an
+    external PostgreSQL with its own backups. See [Install the hub](install.md#before-you-start).
 
 ## Watched clusters
 

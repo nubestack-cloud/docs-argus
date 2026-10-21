@@ -51,6 +51,14 @@ wrong value in an environment variable. There is no setting that turns redaction
 
 Agents install read-only. Detection and investigation need nothing more.
 
+By default the agent can read the whole cluster: every API group it serves, including your
+custom resources, so an investigation can follow a problem wherever it leads. It can never
+read a Secret's contents or list Secrets, open a shell in a pod (`exec`, `attach`,
+`port-forward`), or reach a node or pod through the API server's proxy. A few API groups whose
+contents amount to credentials, such as Rancher and OpenShift tokens, are left out
+(`read.excludeApiGroups` in the agent chart, which you can extend). To go back to the fixed list
+of kinds ARGUS's own features use, install the agent with `--set read.allApiGroups=false`.
+
 Remediation is enabled per cluster **when the agent is installed or upgraded**, never from
 the product: the hub cannot grant an agent permissions, so write access is Kubernetes RBAC
 in the target cluster. It is scoped either to named namespaces or, deliberately opt-in, to

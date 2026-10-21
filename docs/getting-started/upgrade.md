@@ -7,6 +7,18 @@ keeps running while you move them one at a time.
 Read the release notes for every release between yours and the new one first. Anything that
 needs your attention is listed there.
 
+## Back up first
+
+With the built-in database, copy it off the cluster before you upgrade. This file is your way back
+if the upgrade goes wrong:
+
+```bash
+kubectl -n argus-system exec argus-hub-postgres-0 -- pg_dump -U postgres -Fc argus > argus-before-upgrade.dump
+```
+
+Keep it somewhere safe: it holds the hub's keys as well as its data. With an [external
+database](install.md#an-external-database), take your database's own backup or snapshot instead.
+
 ## Upgrade the hub
 
 ```bash
@@ -17,11 +29,10 @@ kubectl -n argus-system rollout status deploy/argus-hub --timeout=10m
 
 What happens:
 
-1. The database is **dumped first**, onto its own volume, and the upgrade waits for it. This is
-   your way back if the upgrade goes wrong.
-2. The hub restarts once, for about 20 seconds. Before the new hub serves anything, its database
-   is migrated to the new release.
-3. Agents reconnect by themselves. The hub's own cluster's agent is upgraded with the hub.
+1. The hub restarts once, for about 20 seconds. Before the new hub serves anything, its database
+   is migrated to the new release. Each migration is one transaction, so a failed one changes
+   nothing.
+2. Agents reconnect by themselves. The hub's own cluster's agent is upgraded with the hub.
 
 !!! warning "`--reset-then-reuse-values`, never `--reuse-values`"
     `--reuse-values` also keeps the old chart's image versions, so the upgrade changes nothing.
@@ -59,18 +70,16 @@ Secret the upgrade does not touch.
 enrolment survives.
 
 **The hub** goes back only together with its database: migrations only move forward, and the
-previous hub refuses a database the new one has migrated. Restore the dump the upgrade took, then
-roll the release back:
+previous hub refuses a database the new one has migrated. Restore the copy you took before
+upgrading, then roll the release back:
 
 ```bash
 P="kubectl -n argus-system exec argus-hub-postgres-0 --"
-$P ls -l /var/lib/postgresql/data/backups          # the newest argus-*.dump is the upgrade's
-DUMP=/var/lib/postgresql/data/backups/argus-YYYYMMDDTHHMMSSZ.dump
-
 kubectl -n argus-system scale deploy/argus-hub --replicas=0
 $P psql -U postgres -d postgres -c "ALTER DATABASE argus RENAME TO argus_before_rollback"
 $P createdb -U postgres argus
-$P pg_restore -U postgres -d argus --exit-on-error "$DUMP"
+kubectl -n argus-system exec -i argus-hub-postgres-0 -- \
+  pg_restore -U postgres -d argus --exit-on-error < argus-before-upgrade.dump
 helm -n argus-system rollback argus-hub
 ```
 
@@ -82,8 +91,8 @@ Check the restored hub found its keys: `kubectl -n argus-system logs deploy/argu
 prints `5`. If its log says `generated and persisted a new` instead, the keys did not come back:
 stop, and restore again before agents try to reconnect.
 
-The two most recent pre-upgrade dumps are kept. With an [external
-database](install.md#an-external-database), restore from your database's own backup instead.
+With an [external database](install.md#an-external-database), restore from your database's own
+backup instead.
 
 ## Changing settings without upgrading
 

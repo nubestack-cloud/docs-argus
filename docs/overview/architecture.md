@@ -77,9 +77,9 @@ models itself.
 | The agent's client certificate and cluster identity | A Secret in the agent's namespace, in the watched cluster |
 | Secret contents | Nowhere — they are never read |
 
-The bundled database is dumped before each upgrade so the upgrade can be rolled back, but it is
-not backed up on a schedule. For anything you care about, use an external PostgreSQL instance
-with its own backups.
+The bundled database has no backups of its own: copy it off the cluster before each upgrade
+([Upgrade and roll back](../getting-started/upgrade.md#back-up-first)). For anything you care
+about, use an external PostgreSQL instance with its own backups.
 
 ## See also
 

@@ -32,6 +32,7 @@ hide:
 
 [Get started](getting-started/index.md){ .md-button .md-button--primary }
 [What ARGUS is](overview/what-is-argus.md){ .md-button }
+[:fontawesome-brands-github: View on GitHub](https://github.com/nubestack-collab/argus){ .md-button }
 
 </div>
 

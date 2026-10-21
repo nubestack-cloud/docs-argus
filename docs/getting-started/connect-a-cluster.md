@@ -79,7 +79,7 @@ can be rolled out everywhere by your GitOps tool.
    `token`, with your secret manager — External Secrets, Sealed Secrets, Vault. Never commit it
    in plain text.
 3. Deploy the agent chart to every cluster with the same values as above, minus the token. The
-   [ARGUS repository](https://github.com/nubestack-collab/ARGUS/tree/main/deploy/examples) has ready-made examples: an Argo CD ApplicationSet that
+   [ARGUS repository](https://github.com/nubestack-collab/argus/tree/main/deploy/examples) has ready-made examples: an Argo CD ApplicationSet that
    installs the agent on every cluster Argo CD manages, named after the cluster, and a Flux
    `HelmRelease`.
 

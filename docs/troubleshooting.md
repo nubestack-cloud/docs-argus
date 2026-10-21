@@ -2,6 +2,24 @@
 
 Symptoms, in the form you would search for them.
 
+## The hub does not start after installing
+
+Check its pods: `kubectl -n argus-system get pods`.
+
+- **The hub is stuck at `Init:0/2` and the database pod is `Pending`.** The database's volume could
+  not be created. `kubectl -n argus-system describe pvc data-argus-hub-postgres-0` says why, usually
+  a storage class that cannot provision on this cluster. Fix the storage, or choose another class:
+  uninstall, delete that PVC, and install again with
+  `--set postgres.bundled.persistence.storageClass=<class>`.
+- **The install itself stopped with a message.** It names what to change: a ClusterIssuer that does
+  not exist, or remediation on a cluster older than Kubernetes 1.30.
+
+## The browser warns about the certificate
+
+cert-manager has not issued it yet: `kubectl -n argus-system describe certificate argus-hub-tls`
+shows why. A ClusterIssuer that uses HTTP-01 needs the hub's hostname to be reachable from the
+internet, so a private address such as `argus.10.0.0.5.nip.io` cannot get a public certificate.
+
 ## I cannot sign in
 
 Check the bootstrap password is the one from your installation — for a Helm deployment it is
