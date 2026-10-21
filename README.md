@@ -3,7 +3,7 @@
 Product and user documentation for NubeStack ARGUS, built with MkDocs and Material.
 
 Published site: <https://argus.nubestack.com/> (GitHub Pages default:
-<https://nubestack-collab.github.io/docs-argus/>)
+<https://nubestack-cloud.github.io/docs-argus/>)
 
 ## Build it
 
@@ -53,7 +53,7 @@ Workflow permissions** to allow write access, or turn Pages on by hand under
 ## Custom domain
 
 The site is served at `argus.nubestack.com` rather than the default
-`nubestack-collab.github.io` address. Two things in this repository make that work, and both
+`nubestack-cloud.github.io` address. Two things in this repository make that work, and both
 are in place:
 
 - `docs/CNAME` — a single line, `argus.nubestack.com`. MkDocs copies it into `site/` on
@@ -67,7 +67,7 @@ Two things outside this repository have to match, and only an organisation admin
 them:
 
 1. **DNS** — at whichever provider hosts the nameservers for `nubestack.com`, a `CNAME`
-   record for the `argus` host pointing at `nubestack-collab.github.io`. Check the
+   record for the `argus` host pointing at `nubestack-cloud.github.io`. Check the
    registrar's nameserver settings if unsure: a domain bought at one provider is not
    necessarily hosted there.
 2. **GitHub** — the repository's **Settings → Pages → Custom domain** set to

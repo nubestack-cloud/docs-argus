@@ -4,8 +4,8 @@ site_description: >-
   investigation and remediation for Kubernetes fleets.
 site_author: NubeStack
 site_url: https://argus.nubestack.com/
-repo_url: https://github.com/nubestack-collab/argus
-repo_name: nubestack-collab/argus
+repo_url: https://github.com/nubestack-cloud/argus
+repo_name: nubestack-cloud/argus
 edit_uri: ""
 copyright: Copyright &copy; NubeStack. ARGUS is open source under the GNU AGPL-3.0.
 
@@ -91,7 +91,7 @@ extra:
   generator: false
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/nubestack-collab/argus
+      link: https://github.com/nubestack-cloud/argus
       name: ARGUS on GitHub
     - icon: fontawesome/solid/globe
       link: https://nubestack.com/products/argus/

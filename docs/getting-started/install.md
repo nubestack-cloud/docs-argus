@@ -194,7 +194,7 @@ both connection strings in one Secret and install with:
 --set postgres.external.appPasswordKey=appPassword
 ```
 
-The [install guide in the ARGUS repository](https://github.com/nubestack-collab/argus/blob/main/docs/INSTALL.md#external-postgres) has the SQL to
+The [install guide in the ARGUS repository](https://github.com/nubestack-cloud/argus/blob/main/docs/INSTALL.md#external-postgres) has the SQL to
 prepare the database, the Secret's format, and a CloudNativePG example.
 
 !!! warning "The built-in database has no backups"
