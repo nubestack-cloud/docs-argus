@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 256" role="img" aria-labelledby="workload-map-title workload-map-desc">
+  <title id="workload-map-title">A workload chain in the cluster map</title>
+  <desc id="workload-map-desc">The map presents an entry, such as an Ingress or route, followed by a Service, the workload behind it, and its pods. These are the objects in the map chain, each with its own health. A missing backend or a Service without ready endpoints shows where the chain fails.</desc>
+  <defs>
+    <marker id="workload-map-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path class="d-arrow--accent" d="M0 0 8 4 0 8Z"/></marker>
+  </defs>
+  <text class="d-label" x="20" y="30">ONE WORKLOAD'S MAP CHAIN</text>
+  <path class="d-flow" d="M214 130H254" marker-end="url(#workload-map-arrow)"/>
+  <path class="d-flow" d="M458 130H498" marker-end="url(#workload-map-arrow)"/>
+  <path class="d-flow" d="M702 130H742" marker-end="url(#workload-map-arrow)"/>
+
+  <rect class="d-card" x="16" y="56" width="192" height="144" rx="12"/>
+  <rect class="d-chip" x="34" y="74" width="40" height="40" rx="10"/>
+  <svg class="d-icon" x="42" y="82" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3H18V21H4ZM1 12H14M10 8 14 12 10 16"/></svg>
+  <text class="d-title" x="34" y="148">Entry</text>
+  <text class="d-muted" x="34" y="176">Ingress or route</text>
+
+  <rect class="d-card" x="260" y="56" width="192" height="144" rx="12"/>
+  <rect class="d-chip" x="278" y="74" width="40" height="40" rx="10"/>
+  <svg class="d-icon" x="286" y="82" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="2" width="8" height="6" rx="1"/><rect x="2" y="16" width="7" height="6" rx="1"/><rect x="15" y="16" width="7" height="6" rx="1"/><path d="M12 8V12M5.5 16V12H18.5V16"/></svg>
+  <text class="d-title" x="278" y="148">Service</text>
+  <text class="d-muted" x="278" y="176">Selects ready endpoints</text>
+
+  <rect class="d-card" x="504" y="56" width="192" height="144" rx="12"/>
+  <rect class="d-chip" x="522" y="74" width="40" height="40" rx="10"/>
+  <svg class="d-icon" x="530" y="82" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 22 7 12 12 2 7ZM2 12 12 17 22 12M2 17 12 22 22 17"/></svg>
+  <text class="d-title" x="522" y="148">Workload</text>
+  <text class="d-muted" x="522" y="176">Owns a set of pods</text>
+
+  <rect class="d-card--accent" x="748" y="56" width="192" height="144" rx="12"/>
+  <rect class="d-chip" x="766" y="74" width="40" height="40" rx="10"/>
+  <svg class="d-icon" x="774" y="82" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="8" height="8" rx="1.5"/><rect x="14" y="2" width="8" height="8" rx="1.5"/><rect x="2" y="14" width="8" height="8" rx="1.5"/><rect x="14" y="14" width="8" height="8" rx="1.5"/></svg>
+  <text class="d-title" x="766" y="148">Pods</text>
+  <text class="d-muted" x="766" y="176">Run the application</text>
+
+  <text class="d-muted d-centred" x="480" y="232">A missing backend or ready endpoint shows where the chain breaks.</text>
+</svg>

@@ -4,11 +4,12 @@ ARGUS runs one loop for every problem it finds: detect it, work out why, fix it,
 the fix held. The incident page draws the same loop as four phases and an outcome, so what
 you read on screen is the loop itself.
 
-```text
-   Detected ──▶ Diagnosed ──▶     Fix      ──▶ Holding ──▶ Outcome
-   what broke   why it broke   decide, run    did it hold   how it ended
-                               or you do it
-```
+<figure class="argus-diagram">
+<div class="argus-diagram__viewport" role="region" aria-label="Incident loop diagram" tabindex="0">
+--8<-- "incident-loop.svg"
+</div>
+<figcaption>The incident page follows these phases. A phase that does not apply is skipped; the outcome stays Open until the incident closes.</figcaption>
+</figure>
 
 ## Detection
 

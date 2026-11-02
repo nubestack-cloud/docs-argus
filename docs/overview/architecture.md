@@ -3,26 +3,12 @@
 ARGUS has two components: a hub you run once, and an agent you install in each cluster it
 watches. Everything else is a choice about where the AI model runs.
 
-```text
-        your browser
-             │  HTTPS
-        ┌────▼─────────────────────────────┐
-        │             HUB                  │
-        │  web interface, API, incident    │        ┌──────────────────┐
-        │  state machine, investigation    │───────▶│   AI provider    │
-        │  orchestration, audit trail      │        │  API or runner   │
-        └────┬───────────────────┬─────────┘        └──────────────────┘
-             │                   │
-      ┌──────▼──────┐     mutual TLS tunnel
-      │  PostgreSQL │       (agent dials out)
-      └─────────────┘            │
-                     ┌───────────┴───────────┐
-                     │                       │
-              ┌──────▼──────┐         ┌──────▼──────┐
-              │   AGENT     │         │   AGENT     │
-              │ cluster A   │         │ cluster B   │
-              └─────────────┘         └─────────────┘
-```
+<figure class="argus-diagram">
+<div class="argus-diagram__viewport" role="region" aria-label="ARGUS architecture diagram" tabindex="0">
+--8<-- "architecture.svg"
+</div>
+<figcaption>The browser connects over HTTPS. Each cluster's agent opens its own mutual-TLS tunnel to the hub.</figcaption>
+</figure>
 
 ## The hub
 

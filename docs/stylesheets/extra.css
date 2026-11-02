@@ -44,6 +44,85 @@
 .md-typeset__table { width: 100%; }
 .md-typeset table:not([class]) { font-size: 0.76rem; }
 
+/* Inline SVG diagrams share the page's theme and stay readable on small screens. */
+.argus-diagram {
+  --diagram-accent: #327b78;
+  --diagram-tint: #edf6f4;
+  --diagram-line: #778a89;
+  --diagram-border: #d7e3e1;
+  --diagram-surface: #f6f9f8;
+}
+[data-md-color-scheme="slate"] .argus-diagram {
+  --diagram-accent: #83d1c7;
+  --diagram-tint: #263e3d;
+  --diagram-line: #9cadaa;
+  --diagram-border: #49605e;
+  --diagram-surface: #293235;
+}
+.md-typeset figure.argus-diagram {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 1.6rem 0;
+}
+.argus-diagram__viewport {
+  overflow-x: auto;
+  border: 1px solid var(--diagram-border);
+  border-radius: 12px;
+  background: var(--md-default-bg-color);
+  scrollbar-color: var(--diagram-line) var(--diagram-surface);
+}
+.argus-diagram__viewport:focus-visible {
+  outline: 2px solid var(--diagram-accent);
+  outline-offset: 3px;
+}
+.argus-diagram__viewport > svg {
+  display: block;
+  width: 100%;
+  min-width: 760px;
+  height: auto;
+}
+.argus-diagram text {
+  fill: var(--md-default-fg-color);
+  font-family: var(--md-text-font-family);
+  font-size: 14px;
+  text-anchor: start;
+}
+.argus-diagram .d-title { font-size: 19px; font-weight: 700; }
+.argus-diagram .d-muted { fill: var(--md-default-fg-color--light); font-size: 13px; }
+.argus-diagram .d-label {
+  fill: var(--diagram-accent); font-size: 11px; font-weight: 700; letter-spacing: 1.4px;
+}
+.argus-diagram .d-centred { text-anchor: middle; }
+.argus-diagram .d-card {
+  fill: var(--md-default-bg-color); stroke: var(--diagram-border); stroke-width: 1.5;
+}
+.argus-diagram .d-card--accent {
+  fill: var(--diagram-tint); stroke: var(--diagram-accent); stroke-width: 1.5;
+}
+.argus-diagram .d-zone {
+  fill: var(--diagram-surface); stroke: var(--diagram-border); stroke-dasharray: 6 5;
+}
+.argus-diagram .d-chip { fill: var(--diagram-tint); }
+.argus-diagram .d-number {
+  fill: var(--diagram-accent); font-size: 16px; font-weight: 700; text-anchor: middle;
+}
+.argus-diagram .d-icon {
+  fill: none; stroke: var(--diagram-accent); stroke-width: 1.7;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.argus-diagram .d-line {
+  fill: none; stroke: var(--diagram-line); stroke-width: 1.8;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.argus-diagram .d-flow {
+  fill: none; stroke: var(--diagram-accent); stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.argus-diagram .d-arrow { fill: var(--diagram-line); }
+.argus-diagram .d-arrow--accent { fill: var(--diagram-accent); }
+.md-typeset .argus-diagram figcaption { margin: .65rem .2rem 0; text-align: left; }
+
 /* Homepage hero. Scoped to the home page (hide: [toc]) by its class, so it
    never affects an ordinary documentation page. */
 .argus-hero {

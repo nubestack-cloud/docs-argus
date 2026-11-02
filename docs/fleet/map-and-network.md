@@ -16,9 +16,12 @@ the workload.*
 Choose a namespace from the rail on the left; each namespace shows how many pods it holds and
 how many open incidents. For the chosen namespace, each workload is drawn as a chain:
 
-```text
-entry (Ingress or route) ──▶ Service ──▶ workload ──▶ pods
-```
+<figure class="argus-diagram">
+<div class="argus-diagram__viewport" role="region" aria-label="Workload map chain diagram" tabindex="0">
+--8<-- "workload-map.svg"
+</div>
+<figcaption>A map chain connects an entry to a Service, then the workload and pods behind it. Each object carries its own health.</figcaption>
+</figure>
 
 Each node carries its health, and a broken link — a service with no ready endpoints, an
 ingress with no backend — shows where the chain fails. Workloads that need attention come

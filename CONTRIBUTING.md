@@ -161,10 +161,31 @@ python3 -c "from xml.dom.minidom import parse; parse('docs/assets/images/argus-m
 Use them sparingly — a page of admonitions has no emphasis left. Reserve `!!! danger` for
 things that destroy data or expose credentials.
 
+### Diagrams
+
+Diagrams live as SVGs in `docs/assets/diagrams/`. Include them inline so the shared
+`.argus-diagram` styles in `extra.css` follow the light and dark themes:
+
+```html
+<figure class="argus-diagram">
+<div class="argus-diagram__viewport" role="region" aria-label="ARGUS architecture diagram" tabindex="0">
+--8<-- "architecture.svg"
+</div>
+<figcaption>Each cluster's agent opens its own mutual-TLS tunnel to the hub.</figcaption>
+</figure>
+```
+
+Give every SVG a `viewBox`, `role="img"`, and a unique `<title>` and `<desc>` referenced by
+`aria-labelledby`. Prefix IDs with the diagram's name so two diagrams can share a page.
+Use the shared diagram classes for colours, text, cards and connectors. The viewport scrolls
+on small screens and can be focused for keyboard scrolling; keep the caption outside it.
+
+Use graphical diagrams for architecture and flows. Commands and configuration remain code
+blocks.
+
 ### Code blocks
 
-Always label the language. Use `text` for ASCII diagrams. No `$` prompt — the copy button
-copies it too.
+Always label the language. No `$` prompt — the copy button copies it too.
 
 ## Before you publish
 

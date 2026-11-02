@@ -31,6 +31,7 @@ reachable fails the build rather than shipping.
 |---|---|
 | `docs/` | The pages, one directory per nav section |
 | `docs/assets/images/` | Screenshots, plus the header mark and favicon |
+| `docs/assets/diagrams/` | Accessible SVG diagrams, included inline and styled for both themes |
 | `docs/stylesheets/extra.css` | Small overrides on the Material theme |
 | `mkdocs.yml` | Theme, extensions and the nav |
 | `CONTRIBUTING.md` | How to write for this site — read before editing a page |

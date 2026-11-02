@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 284" role="img" aria-labelledby="incident-loop-title incident-loop-desc">
+  <title id="incident-loop-title">Four incident phases and an outcome</title>
+  <desc id="incident-loop-desc">Detected asks what broke. Diagnosed asks why it broke. Fix is a decision and an approved action, or guidance for a person to carry out. Holding checks whether the fix stayed in place and the symptom stayed quiet. Outcome records how the incident ended and remains Open until it closes. Phases that do not apply can be skipped.</desc>
+  <defs>
+    <marker id="incident-loop-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path class="d-arrow--accent" d="M0 0 8 4 0 8Z"/></marker>
+  </defs>
+  <text class="d-label" x="20" y="30">THE INCIDENT LOOP</text>
+  <path class="d-flow" d="M182 136H202" marker-end="url(#incident-loop-arrow)"/>
+  <path class="d-flow" d="M374 136H394" marker-end="url(#incident-loop-arrow)"/>
+  <path class="d-flow" d="M566 136H586" marker-end="url(#incident-loop-arrow)"/>
+  <path class="d-flow" d="M758 136H778" marker-end="url(#incident-loop-arrow)"/>
+
+  <rect class="d-card" x="16" y="56" width="160" height="164" rx="12"/>
+  <circle class="d-chip" cx="50" cy="92" r="18"/>
+  <text class="d-number" x="50" y="98">1</text>
+  <svg class="d-icon" x="124" y="80" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12H6L9 4 14 20 17 12H22"/></svg>
+  <text class="d-title" x="32" y="142">Detected</text>
+  <text class="d-muted" x="32" y="172">What broke</text>
+  <text class="d-muted" x="32" y="194">Find the real fault</text>
+
+  <rect class="d-card" x="208" y="56" width="160" height="164" rx="12"/>
+  <circle class="d-chip" cx="242" cy="92" r="18"/>
+  <text class="d-number" x="242" y="98">2</text>
+  <svg class="d-icon" x="316" y="80" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="M14.5 14.5 21 21"/></svg>
+  <text class="d-title" x="224" y="142">Diagnosed</text>
+  <text class="d-muted" x="224" y="172">Why it broke</text>
+  <text class="d-muted" x="224" y="194">Investigate the cause</text>
+
+  <rect class="d-card--accent" x="400" y="56" width="160" height="164" rx="12"/>
+  <circle class="d-chip" cx="434" cy="92" r="18"/>
+  <text class="d-number" x="434" y="98">3</text>
+  <svg class="d-icon" x="508" y="80" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 20 6V12C20 17 16 20 12 22 8 20 4 17 4 12V6ZM8 12 11 15 16 9"/></svg>
+  <text class="d-title" x="416" y="142">Fix</text>
+  <text class="d-muted" x="416" y="172">Approve and run,</text>
+  <text class="d-muted" x="416" y="194">or follow guidance</text>
+
+  <rect class="d-card" x="592" y="56" width="160" height="164" rx="12"/>
+  <circle class="d-chip" cx="626" cy="92" r="18"/>
+  <text class="d-number" x="626" y="98">4</text>
+  <svg class="d-icon" x="700" y="80" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 6V12L16 14"/></svg>
+  <text class="d-title" x="608" y="142">Holding</text>
+  <text class="d-muted" x="608" y="172">Did it stay fixed?</text>
+  <text class="d-muted" x="608" y="194">Re-check the symptom</text>
+
+  <rect class="d-card" x="784" y="56" width="160" height="164" rx="12"/>
+  <svg class="d-icon" x="804" y="78" width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 22V3M5 3C10 0 14 6 20 3V14C14 17 10 11 5 14"/></svg>
+  <text class="d-title" x="800" y="142">Outcome</text>
+  <text class="d-muted" x="800" y="172">How it ended</text>
+  <text class="d-muted" x="800" y="194">Open until closed</text>
+
+  <text class="d-muted d-centred" x="480" y="258">A change needs approval. Holding checks that the symptom stays quiet and the change still holds.</text>
+</svg>
