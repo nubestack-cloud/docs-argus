@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+  {{ super() }}
+  <link rel="preload" href="{{ 'assets/fonts/inter-latin-wght-normal.woff2' | url }}" as="font" type="font/woff2" crossorigin>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#3c7d7d">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#234b4b">
+  <script>try{if(localStorage.getItem("argus.docs.navigation")==="hidden")document.documentElement.dataset.argusNavigation="hidden"}catch(e){}</script>
+{% endblock %}

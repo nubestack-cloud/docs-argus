@@ -1,10 +1,15 @@
 ---
+title: ARGUS documentation
+description: Install and operate NubeStack ARGUS, connect Kubernetes clusters, investigate incidents and review proposed fixes.
 hide:
   - toc
 ---
 
 <div class="argus-hero" markdown>
 
+<div class="argus-hero__main" markdown>
+
+<div class="argus-brand">
 <svg class="argus-hero-mark" viewBox="4 4 56 56" role="img" aria-label="ARGUS">
   <g fill="currentColor">
     <rect x="29.6" y="4" width="4.8" height="19" rx="2.4" transform="rotate(0 32 32)"/>
@@ -24,109 +29,105 @@ hide:
     <circle cx="32" cy="32" r="6.6"/>
   </g>
 </svg>
+<span><a href="https://nubestack.com/">NubeStack</a> <span aria-hidden="true">/</span> ARGUS</span>
+</div>
 
-# ARGUS
+# ARGUS documentation
 
-**Built for the gap between "an alert fired" and "the cause is understood".**
+Install ARGUS on your own infrastructure, connect your Kubernetes clusters, and follow
+incidents from detection to a reviewed fix.
 
-[Get started](getting-started/index.md){ .md-button .md-button--primary }
-[What ARGUS is](overview/what-is-argus.md){ .md-button }
-[:fontawesome-brands-github: View on GitHub](https://github.com/nubestack-cloud/argus){ .md-button }
+[Install the hub](getting-started/install.md){ .md-button .md-button--primary }
+[Explore ARGUS](overview/what-is-argus.md){ .md-button }
+
+<button class="argus-search" type="button" data-argus-search aria-label="Search the documentation">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 3A6.5 6.5 0 1 0 13.7 14.5L19.2 20 20.6 18.6 15.1 13.1A6.5 6.5 0 0 0 9.5 3m0 2a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9"/></svg>
+  <span>Search installation, clusters, incidents…</span>
+  <kbd>/</kbd>
+</button>
 
 </div>
 
-![The ARGUS overview, showing open incidents, incidents waiting on a person, node readiness,
-fleet capacity, and the clusters' incidents by severity](assets/images/01-overview.png){ .argus-hero-shot }
+<div class="argus-start" markdown>
 
-ARGUS watches your Kubernetes clusters, works out why something is broken, and proposes a
-fix you review before anything changes. It is self-hosted: the hub runs on your
-infrastructure, and one agent runs in each cluster you want it to watch.
+<p class="argus-eyebrow">Getting started</p>
 
-## What it does
+## Your first installation
 
-ARGUS closes a loop that most monitoring stops halfway through.
+1. [Install the hub](getting-started/install.md)
+2. [Sign in and change the password](getting-started/first-sign-in.md)
+3. [Connect an AI provider](getting-started/configure-analysis.md)
+4. [Connect your other clusters](getting-started/connect-a-cluster.md)
+5. [Read your first incident](getting-started/first-incident.md)
 
-| Stage | What happens |
-|---|---|
-| Detect | Agents watch events, pod conditions and sustained cluster state, and report symptoms |
-| Group | Related symptoms become one incident per affected object, not one alert per event |
-| Investigate | An AI investigation gathers live evidence through read-only tools and states a cause |
-| Recommend | ARGUS decides where the fix belongs — your repository, or the live cluster |
-| Approve | A person reads the evidence and the proposed change, then approves or rejects it |
-| Validate | After the change lands, ARGUS checks it actually held before closing the incident |
-| Close | A problem that clears on its own is confirmed gone against the live cluster and closed |
-
-Detection and investigation are read-only. Nothing changes a cluster until someone
-approves it, and a fresh installation cannot execute anything at all.
-
-## Where to start
-
-<div class="grid cards" markdown>
-
--   :material-compass-outline:{ .lg .middle } **What ARGUS is**
-
-    ---
-
-    The product in one page, and the problem it is built around.
-
-    [Overview](overview/what-is-argus.md)
-
--   :material-download-outline:{ .lg .middle } **Getting started**
-
-    ---
-
-    Install the hub, connect a cluster, and see your first incident.
-
-    [Getting started](getting-started/index.md)
-
--   :material-file-search-outline:{ .lg .middle } **Reading an incident**
-
-    ---
-
-    What is on screen, and how to read the evidence behind a conclusion.
-
-    [Reading an incident](incidents/reading-an-incident.md)
-
--   :material-source-branch:{ .lg .middle } **Resolution routes**
-
-    ---
-
-    What ARGUS will and will not change, and where a fix lands.
-
-    [Resolution routes](remediation/routes.md)
-
--   :material-view-dashboard-outline:{ .lg .middle } **Your fleet**
-
-    ---
-
-    Each cluster's map, network policy, GitOps, Helm, certificates, upgrades and posture.
-
-    [Your fleet](fleet/index.md)
-
--   :material-shield-check-outline:{ .lg .middle } **Security model**
-
-    ---
-
-    Trust boundaries, what leaves your cluster, and what a compromise would reach.
-
-    [Security model](overview/security-model.md)
+The hub starts watching its own cluster automatically.
 
 </div>
 
-## What ARGUS does not do
+</div>
 
-It does not run arbitrary commands in your clusters. Every change it can make is one of a
-small set of typed actions with a known shape, rehearsed against the Kubernetes API before
-it is applied.
+## Guides by task
 
-It does not read the contents of Secrets. Secret material is removed inside your cluster,
-before any data crosses the network to the hub.
+<div class="grid cards argus-guides" markdown>
 
-It does not merge pull requests. When the durable fix belongs in a repository, ARGUS opens
-a pull request and your normal review process decides.
+-   :material-download-outline:{ .lg .middle } [Installation and upgrades](getting-started/index.md)
+
+    Requirements, Helm installation, first sign-in and upgrades.
+
+-   :material-view-dashboard-outline:{ .lg .middle } [Your Kubernetes fleet](fleet/index.md)
+
+    Cluster health, workload maps, GitOps, Helm and readiness checks.
+
+-   :material-file-search-outline:{ .lg .middle } [Incident investigation](incidents/index.md)
+
+    Detection, evidence, investigation and the incident lifecycle.
+
+-   :material-source-pull:{ .lg .middle } [Reviewed fixes](remediation/index.md)
+
+    Approvals, pull requests, in-place changes and validation.
+
+-   :material-tune-variant:{ .lg .middle } [Administration](administration/index.md)
+
+    Users, AI providers, single sign-on, retention and the audit log.
+
+-   :material-shield-check-outline:{ .lg .middle } [Security and access](overview/security-model.md)
+
+    Permissions, trust boundaries and the data that leaves a cluster.
+
+</div>
+
+<div class="argus-tour" markdown>
+
+<div class="argus-tour__intro" markdown>
+
+<p class="argus-eyebrow">Inside the console</p>
+
+## From fleet health to incident evidence
+
+Start with the fleet overview, open an affected cluster, and read the evidence behind
+an incident before reviewing its proposed fix.
+
+Detection and investigation are read-only. Remediation is off by default.
+
+[Explore the fleet overview](fleet/overview.md)
+
+[Read an incident](incidents/reading-an-incident.md)
+
+</div>
+
+<figure class="argus-tour__shot" markdown>
+
+![The ARGUS fleet overview with open incidents, node readiness, capacity and cluster health](assets/images/01-overview.png){ loading=lazy }
+
+<figcaption>The fleet overview brings cluster health and open incidents together.</figcaption>
+
+</figure>
+
+</div>
 
 ## See also
 
-- [How it works](overview/how-it-works.md)
-- [The incident lifecycle](incidents/lifecycle.md)
-- [Requirements](getting-started/requirements.md)
+- [Architecture](overview/architecture.md)
+- [Automation and guardrails](automation/index.md)
+- [Network requirements](reference/network-requirements.md)
+- [Troubleshooting](troubleshooting.md)

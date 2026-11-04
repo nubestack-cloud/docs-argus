@@ -15,8 +15,9 @@ whole installation under **Settings → Appearance**.
 
 ## Sign in
 
-Open the hub's address — the `ingress.host` you installed with, such as
-`https://argus.example.com`.
+Open the hub's address using the `ingress.host` you installed with. The minimal install
+uses `http://argus.example.com`; use `https://argus.example.com` if you enabled TLS through
+a cert-manager ClusterIssuer or your own TLS Secret. Replace the example hostname with yours.
 
 | Field | Value |
 |---|---|

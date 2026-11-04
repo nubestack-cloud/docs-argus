@@ -13,57 +13,108 @@ So one `helm install` gives you a hub that is already watching the cluster it ru
 You need:
 
 - a Kubernetes cluster for the hub, version 1.29 or later (1.30 or later if ARGUS may change
-  anything). Any distribution works, OpenShift included: the hub finds your storage and ingress
-  controller, and adapts to OpenShift's security policy, by itself;
-- Helm 3.8 or later on your machine;
+  anything). RKE2, vanilla Kubernetes, OKD and OpenShift are supported;
+- Helm 3.8 or later and `kubectl`, configured for that cluster;
 - an ingress controller in that cluster, or a Gateway API Gateway (see
   [Gateway API](#gateway-api-instead-of-ingress));
-- a hostname for the hub, such as `argus.example.com`, that your browser and your other
-  clusters can reach;
-- optionally, cert-manager, to get HTTPS without handling certificates yourself.
+- a hostname for the hub that resolves to your ingress controller's reachable IP address.
+  Your browser and any clusters you connect must be able to reach it. See the examples below.
 
-The database needs a volume. The hub uses your cluster's default storage class, or one of its
-storage classes if none is the default. On a cluster with no storage at all it still installs, but
-the database is temporary and loses its data when its pod restarts: fine for a trial only.
-
-!!! tip "No DNS name to spare?"
-    `argus.<ingress-ip>.nip.io` points at your ingress controller's IP address with no DNS
-    change, which is enough for a trial.
-
-Decide two things now, because they are hard to change later:
-
-1. **How big the database should be.** The default is 10 GB, enough for a handful of clusters.
-   Plan about 0.5–1 GB for each busy cluster you will watch. Helm cannot grow the volume after
-   installing, so pick the size up front.
-2. **Where the data lives.** By default the hub runs its own database in the cluster. That is the
-   simplest choice, but it has no scheduled backups. If incident history and the audit log must
-   survive losing the cluster, use a managed database instead: see
-   [An external database](#an-external-database).
+The hub uses the cluster's default ingress class and storage class, or chooses one if none is
+marked as the default. It detects OKD/OpenShift and adapts to its security policy automatically.
+The database gets a 10 GiB volume by default. With no storage class, it uses temporary storage
+and loses its data when the pod restarts; use this only for a trial.
 
 See [Requirements](requirements.md) for the full list.
 
 ## Step 1: Install the hub
 
+Replace `argus.example.com` with your hostname. This is the only value you need to set:
+
 ```bash
 helm install argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.0 \
   -n argus-system --create-namespace \
-  --set ingress.host=argus.example.com \
-  --set ingress.clusterIssuer=letsencrypt
+  --set ingress.host=argus.example.com
 ```
 
-| Option | What to put |
-|---|---|
-| `ingress.host` | **Required.** The hub's hostname |
-| `ingress.clusterIssuer` | The name of a cert-manager ClusterIssuer in your cluster (`kubectl get clusterissuer`), for HTTPS. The install stops if there is none by that name. No cert-manager? Leave it out and add `--set ingress.tls.enabled=true --set ingress.tls.secretName=<your TLS Secret>` instead. **Plain HTTP, for a trial:** leave out both; the hub is then at `http://<host>`, and agents still encrypt their own connection inside it |
-| `ingress.className` | Only to choose a specific ingress controller. Without it, the hub uses the default one, or one of your cluster's ingress controllers if none is the default |
-| `postgres.bundled.persistence.size` | Only if you need more than 10Gi, for example `50Gi` |
-| `postgres.bundled.persistence.storageClass` | Only to choose a specific storage class. Without it, the hub uses the cluster's default, or one of its storage classes if there is no default |
+This installs the hub, its database and an agent for this cluster. The command uses HTTP at
+`http://argus.example.com`; cert-manager is not required. For HTTPS, add one of the certificate
+options below when you install.
 
-The chart creates one Ingress for the web interface, the API and the agents' connection. Your
-ingress controller handles HTTPS with the certificate cert-manager issues (or your Secret), and it
-must keep the agents' connections open: the chart configures ingress-nginx for this. With another
-controller, or a load balancer in front of it, allow idle connections of at least 60 seconds —
-agents send a heartbeat every 30.
+### Optional install settings
+
+The defaults work for a first install. For HTTPS, choose one of the first two options:
+cert-manager or your own certificate. Leave both options out to use HTTP.
+
+| Option | Default | What to add or change |
+|---|---|---|
+| HTTPS with cert-manager | Off; `ingress.clusterIssuer` is empty | Add `--set ingress.clusterIssuer=letsencrypt`, using an existing ClusterIssuer name from `kubectl get clusterissuer`. cert-manager obtains the certificate and TLS is enabled automatically. The install stops if the issuer does not exist |
+| HTTPS with your own certificate | `ingress.tls.enabled=false`; Secret name defaults to `argus-hub-tls` | Add both `--set ingress.tls.enabled=true` and `--set ingress.tls.secretName=argus-tls`. Before installing, create the TLS Secret `argus-tls` in `argus-system` with your certificate and private key. Leave `ingress.clusterIssuer` unset |
+| `ingress.className` | Automatically selected | Choose a specific ingress class, for example `--set ingress.className=nginx` or `--set ingress.className=openshift-default`; check names with `kubectl get ingressclass` |
+| `ingress.annotations` | `{}` | Add controller-specific settings through a values file with `-f values.yaml`. nginx timeouts are added automatically |
+| `postgres.bundled.persistence.size` | `10Gi` | Choose the database volume size before installing, for example `--set postgres.bundled.persistence.size=50Gi`. Plan about 0.5–1 GiB per busy cluster; Helm cannot grow this volume later |
+| `postgres.bundled.persistence.storageClass` | Automatically selected | Choose a specific storage class with `--set postgres.bundled.persistence.storageClass=<name>`; check names with `kubectl get storageclass` |
+| `global.openshift` | Automatically detected | Force OpenShift security settings for the hub and its agent with `--set global.openshift=true` only if automatic detection is unavailable |
+
+For a database with its own backups, see [An external database](#an-external-database).
+
+### Example: RKE2 or vanilla Kubernetes
+
+Suppose your ingress controller is reachable at `192.0.2.10`. Replace that example IP with
+your controller's IP and create a DNS A record:
+
+```text
+argus.example.com.  A  192.0.2.10
+```
+
+For a local trial, you can add this to your client machine's hosts file instead
+(`/etc/hosts` on Linux or macOS):
+
+```text
+192.0.2.10 argus.example.com
+```
+
+Run the Step 1 command with `--set ingress.host=argus.example.com`, then open
+`http://argus.example.com` once the hub is ready. If you have no DNS name to spare,
+`--set ingress.host=argus.192.0.2.10.nip.io` uses that IP without a DNS change.
+
+### Example: OKD or OpenShift
+
+Use a hostname under your cluster's apps domain and point it at the apps/ingress floating
+IP reachable from your clients. For example, if the apps domain is `apps.cluster.example.com`
+and the apps/ingress IP is `198.51.100.20`, create this DNS A record. These are documentation
+examples; replace them with your own domain and IP:
+
+```text
+argus.apps.cluster.example.com.  A  198.51.100.20
+```
+
+If your cluster already has wildcard DNS for `*.apps.cluster.example.com` pointing
+there, the hostname resolves already. Otherwise, create that A record or add this to your
+client machine's hosts file for a local trial:
+
+```text
+198.51.100.20 argus.apps.cluster.example.com
+```
+
+Install with that hostname, replacing the example domain and IP with your own:
+
+```bash
+helm install argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.0 \
+  -n argus-system --create-namespace \
+  --set ingress.host=argus.apps.cluster.example.com
+```
+
+OKD/OpenShift [creates a Route from the chart's Ingress automatically](https://docs.okd.io/4.21/networking/ingress_load_balancing/routes/creating-basic-routes.html).
+Once ready, open
+`http://argus.apps.cluster.example.com`. HTTPS uses the optional certificate settings
+above; an apps hostname alone does not enable it.
+
+In either example, a hosts-file entry applies only to that machine. Before connecting
+other clusters, make sure their agents can resolve the hostname through DNS and reach
+the ingress IP over the network.
+
+### Check the installation
 
 Wait for it to start. This takes about a minute, mostly downloading images:
 
@@ -71,10 +122,11 @@ Wait for it to start. This takes about a minute, mostly downloading images:
 kubectl -n argus-system rollout status deploy/argus-hub --timeout=5m
 ```
 
-You now have the hub, its database, and an agent for this cluster. The agent connects by itself
-within a minute and appears on **Clusters** as `local`: there is no token to issue and nothing to
-accept. Agents connect through the same address as the web interface, so there is no second port
-to open.
+The agent connects by itself within a minute and appears on **Clusters** as `local`.
+Agents use the same address as the web interface, so there is no second port to open. The
+chart configures ingress-nginx to keep their connections open. With another controller or
+a load balancer in front of it, allow idle connections of at least 60 seconds; agents send
+a heartbeat every 30.
 
 !!! note "Always pass `--version`"
     Each chart version always installs exactly the same software. A misspelt option stops the
@@ -82,7 +134,8 @@ to open.
 
 ## Step 2: Sign in
 
-[Sign in and change the bootstrap password](first-sign-in.md).
+Open `http://<your-hostname>` (or `https://<your-hostname>` if you enabled TLS), then
+[sign in and change the bootstrap password](first-sign-in.md).
 
 ## Step 3: Connect an AI model
 

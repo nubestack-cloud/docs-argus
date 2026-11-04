@@ -7,34 +7,37 @@ site_url: https://argus.nubestack.com/
 repo_url: https://github.com/nubestack-cloud/argus
 repo_name: nubestack-cloud/argus
 edit_uri: ""
-copyright: Copyright &copy; NubeStack. ARGUS is open source under the GNU AGPL-3.0.
+copyright: >-
+  Copyright &copy; <a href="https://nubestack.com/">NubeStack</a>.
+  ARGUS is open source under the GNU AGPL-3.0.
 
 theme:
   name: material
+  custom_dir: overrides
   language: en
   logo: assets/images/argus-mark.svg
   favicon: assets/images/argus-favicon.svg
+  font: false
+  icon:
+    repo: fontawesome/brands/github
   palette:
-    - media: "(prefers-color-scheme)"
-      toggle:
-        icon: material/brightness-auto
-        name: Follow system theme
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: black
-      accent: indigo
+      primary: custom
+      accent: custom
       toggle:
-        icon: material/brightness-7
+        icon: material/weather-night
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: black
-      accent: indigo
+      primary: custom
+      accent: custom
       toggle:
-        icon: material/brightness-4
+        icon: material/weather-sunny
         name: Switch to light mode
   features:
     - navigation.instant
+    - navigation.instant.progress
     - navigation.tracking
     - navigation.top
     - navigation.footer
@@ -50,6 +53,9 @@ theme:
 
 extra_css:
   - stylesheets/extra.css
+
+extra_javascript:
+  - assets/javascripts/navigation.js
 
 markdown_extensions:
   - abbr
@@ -95,8 +101,8 @@ extra:
       link: https://github.com/nubestack-cloud/argus
       name: ARGUS on GitHub
     - icon: fontawesome/solid/globe
-      link: https://nubestack.com/products/argus/
-      name: ARGUS on nubestack.com
+      link: https://nubestack.com/
+      name: NubeStack website
 
 nav:
   - Home: index.md
