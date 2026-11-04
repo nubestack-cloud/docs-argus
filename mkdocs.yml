@@ -55,7 +55,7 @@ extra_css:
   - stylesheets/extra.css
 
 extra_javascript:
-  - assets/javascripts/navigation.js
+  - assets/javascripts/search.js
 
 markdown_extensions:
   - abbr

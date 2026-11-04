@@ -125,7 +125,6 @@
 .md-grid { max-width: none; }
 .md-content { max-width: 52rem; min-width: 0; margin-inline: auto; }
 .md-content:has(.argus-hero) { max-width: 62rem; }
-.md-header__button.argus-nav-toggle { display: none; }
 .md-nav__link--active, .md-nav__link:is(:hover, :focus) { color: var(--md-typeset-a-color); }
 
 @media screen and (min-width: 76.25em) {
@@ -171,10 +170,6 @@
     content: ""; position: absolute; left: -.45rem; top: .3rem; bottom: .3rem;
     width: 2px; border-radius: 2px; background: var(--md-typeset-a-color);
   }
-  .md-header__button.argus-nav-toggle { display: inline-block; margin-left: 0; }
-  [data-argus-navigation="hidden"] .md-main { background: var(--md-default-bg-color); }
-  [data-argus-navigation="hidden"] .md-sidebar--primary { display: none; }
-  [data-argus-navigation="hidden"] .md-content { max-width: 64rem; }
 }
 @media screen and (min-width: 100em) {
   .md-main { --argus-navigation-width: 14.2rem; }
