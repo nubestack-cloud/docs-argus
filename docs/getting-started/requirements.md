@@ -8,10 +8,10 @@ nothing.
 | Requirement | Detail |
 |---|---|
 | Kubernetes | 1.29 or later (1.30 or later to allow remediation), any conformant distribution, OpenShift included |
-| Helm | 3.8 or later, on the machine you install from |
-| Ingress | An ingress controller (or a Gateway API Gateway), and a hostname for the hub that your browser and your other clusters can reach. cert-manager is optional, for HTTPS |
+| Helm | 3.14 or later, on the machine you install from (the upgrade commands use `--reset-then-reuse-values`, added in 3.14) |
+| Ingress | An ingress controller (or a Gateway API Gateway), and a hostname for the hub that your browser and your other clusters can reach. On OKD and OpenShift the built-in router is the ingress controller. cert-manager is optional, for HTTPS |
 | Storage | Any storage class, for a 10 GB database volume: the hub uses the default one, or one of your cluster's if none is the default. Without any, the database is temporary (fine for a trial). Plan about 0.5–1 GB per busy watched cluster |
-| CPU and memory | The hub and its database request about 0.5 core and 1 GiB together, and may use up to 4 GiB; the Claude Code or Codex runner adds about half as much again |
+| CPU and memory | The hub and its database request about 0.5 core and 1 GiB together, and may use up to 4 GiB; the Claude Code or Codex runner adds about half as much again. That is free capacity on worker nodes: on OKD and OpenShift the platform itself reserves about a core on each worker, so 2-vCPU workers are too small without [lowering the requests](install.md#optional-install-settings) |
 
 Run a single hub instance. Agent connections are held in memory, so the hub does not scale
 horizontally; the chart enforces one replica.

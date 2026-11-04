@@ -31,8 +31,8 @@ restart.*
 
 | Field | Value |
 |---|---|
-| Runner URL | The address of the runner service beside the hub: `http://argus-hub-cli-runner:8090` when the hub chart deploys it |
-| Agent | Which CLI the runner should drive: `claude` or `codex` |
+| Runner URL | `http://argus-hub-cli-runner:8090`, exactly, when the hub chart deployed the runner (`http://<release>-cli-runner:8090` for another release name). Not the placeholder shown in the field |
+| Agent | `claude` for an Anthropic API key or a Claude subscription token, `codex` for an OpenAI key. It must match the credential the runner was given |
 | Runner token | The shared token the runner expects. Leave it blank when the hub chart deployed the runner: the hub already has it |
 
 ![The "New Agent CLI provider" dialog: a name, the runner URL
@@ -42,8 +42,9 @@ blank](../assets/images/47-settings-provider-add.png){ width="480" }
 *Adding the runner the hub chart deployed: **Add a provider → Agent CLI**, the runner URL, and
 the CLI it drives. The runner token stays blank, because the hub already has it.*
 
-The hub chart deploys the runner when you give it a model credential; see
-[Install the hub](install.md#claude-code-or-codex).
+The runner exists only after you give the hub chart a credential, in
+[Install the hub, Step 3](install.md#claude-code-or-codex). Do that first; this page is step 4 of
+that sequence.
 
 ## Test before you rely on it
 
@@ -55,8 +56,12 @@ investigation later.
 its token, and has Claude Code 2.0.1 installed](../assets/images/48-settings-provider-test.png)
 
 *A passing test for an Agent CLI provider. It proves the runner URL, the runner token and the
-CLI installation, without calling the model; the model credential is first used by a real
-investigation, so run one on an incident to confirm it end to end.*
+CLI installation, without calling the model.*
+
+!!! warning "A passing test does not prove the credential"
+    For an Agent CLI provider the model credential is first used by a real investigation. Open
+    an incident and select **Investigate** to confirm it end to end. If that fails with
+    *Invalid API key*, see [Analysis fails immediately](../troubleshooting.md#analysis-fails-immediately).
 
 ## Bounding cost and time
 

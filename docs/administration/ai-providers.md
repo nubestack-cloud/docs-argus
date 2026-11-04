@@ -29,14 +29,19 @@ delete controls](../assets/images/09-settings-providers.png)
 
 | Field | Notes |
 |---|---|
-| Runner URL | The runner service beside the hub |
-| Agent | Which CLI the runner drives |
-| Runner token | The shared token the runner expects |
+| Runner URL | The runner service beside the hub: `http://argus-hub-cli-runner:8090` for the runner the hub chart deploys |
+| Agent | `claude` or `codex`, matching the credential the runner was given |
+| Runner token | Blank for the runner the hub chart deploys; otherwise the shared token the runner expects |
+
+The model credential is not entered here: it is given to the runner when the hub is installed
+or upgraded. See [Install the hub, Step 3](../getting-started/install.md#claude-code-or-codex).
 
 ## Test before switching
 
-**Test connection** verifies the endpoint, the credential and the model. A failure names
-the reason, which is easier to act on now than as a failed investigation later.
+**Test connection** checks what this page holds. For an API endpoint that is the endpoint, the
+key and the model. For an Agent CLI provider it is the runner URL, the runner token and the CLI
+installation, but **not** the model credential, which only a real investigation uses. A failure
+names the reason, which is easier to act on now than as a failed investigation later.
 
 ## Choosing a model
 

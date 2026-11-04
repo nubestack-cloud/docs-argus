@@ -11,6 +11,11 @@ Check its pods: `kubectl -n argus-system get pods`.
   a storage class that cannot provision on this cluster. Fix the storage, or choose another class:
   uninstall, delete that PVC, and install again with
   `--set postgres.bundled.persistence.storageClass=<class>`.
+- **The hub or the runner is `Pending`, with *Insufficient cpu* in
+  `kubectl -n argus-system describe pod`.** The workers have no CPU left to promise it. The hub
+  is replaced by stopping the old pod first, so this can appear on an upgrade that adds the runner.
+  Add worker capacity, or lower the requests: `--set resources.requests.cpu=100m` and
+  `--set cliRunner.resources.requests.cpu=50m` on a `helm upgrade`.
 - **The install itself stopped with a message.** It names what to change: a ClusterIssuer that does
   not exist, or remediation on a cluster older than Kubernetes 1.30.
 
@@ -72,6 +77,17 @@ fault:
 No AI provider is active, or the active one is not reachable. Go to
 **Settings → AI providers** and use **Test connection** — it names the reason.
 
+With an Agent CLI provider, the test can pass while every investigation fails, because the test
+does not use the model credential:
+
+- **The hostname does not resolve.** The runner URL must be `http://argus-hub-cli-runner:8090`
+  for the runner the hub chart deploys.
+- **The runner does not have the agent installed.** The provider's **Agent** names a CLI the
+  runner's credential is not for: `claude` for Anthropic credentials, `codex` for OpenAI.
+- **The investigation fails with *Invalid API key*.** The credential was revoked or mistyped, or
+  an old one is still set beside the new one. Give the hub the right one, clearing the other
+  option: see [Changing the credential later](getting-started/install.md#changing-the-credential-later).
+
 ## Analysis reaches no conclusion
 
 The investigation hit its bounds. Raise the iteration and time limits under
@@ -129,7 +145,9 @@ object panel to see its current state. See
 ## The Metrics tab says metrics are unavailable
 
 The cluster's agent has no Prometheus configured, or may not reach it. Point the agent at
-your Prometheus — see [Connect a cluster](getting-started/connect-a-cluster.md). A panel that
+your Prometheus — see [Connect a cluster](getting-started/connect-a-cluster.md). On OKD and
+OpenShift the agent uses the cluster's own monitoring automatically, through its Thanos querier;
+if the panels say *the query failed* there, upgrade the agent so it picks that up. A panel that
 is empty for CPU throttling is expected for containers without a CPU limit.
 
 ## Costs are showing as zero

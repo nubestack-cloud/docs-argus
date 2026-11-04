@@ -14,7 +14,7 @@ You need:
 
 - a Kubernetes cluster for the hub, version 1.29 or later (1.30 or later if ARGUS may change
   anything). RKE2, vanilla Kubernetes, OKD and OpenShift are supported;
-- Helm 3.8 or later and `kubectl`, configured for that cluster;
+- Helm 3.14 or later and `kubectl`, configured for that cluster;
 - an ingress controller in that cluster, or a Gateway API Gateway (see
   [Gateway API](#gateway-api-instead-of-ingress));
 - a hostname for the hub that resolves to your ingress controller's reachable IP address.
@@ -44,7 +44,8 @@ options below when you install.
 ### Optional install settings
 
 The defaults work for a first install. For HTTPS, choose one of the first two options:
-cert-manager or your own certificate. Leave both options out to use HTTP.
+cert-manager or your own certificate. Leave both options out to use HTTP. On OKD or OpenShift
+there is a third, simpler way: [the cluster's own certificate](#https-with-the-clusters-own-certificate).
 
 | Option | Default | What to add or change |
 |---|---|---|
@@ -54,6 +55,7 @@ cert-manager or your own certificate. Leave both options out to use HTTP.
 | `ingress.annotations` | `{}` | Add controller-specific settings through a values file with `-f values.yaml`. nginx timeouts are added automatically |
 | `postgres.bundled.persistence.size` | `10Gi` | Choose the database volume size before installing, for example `--set postgres.bundled.persistence.size=50Gi`. Plan about 0.5–1 GiB per busy cluster; Helm cannot grow this volume later |
 | `postgres.bundled.persistence.storageClass` | Automatically selected | Choose a specific storage class with `--set postgres.bundled.persistence.storageClass=<name>`; check names with `kubectl get storageclass` |
+| `resources.requests.cpu`, `cliRunner.resources.requests.cpu` | `250m` each | Lower them on a small cluster where the hub or the runner stays `Pending` with *Insufficient cpu*, for example `--set resources.requests.cpu=100m`. Neither has a CPU limit, so this changes scheduling, not speed |
 | `global.openshift` | Automatically detected | Force OpenShift security settings for the hub and its agent with `--set global.openshift=true` only if automatic detection is unavailable |
 
 For a database with its own backups, see [An external database](#an-external-database).
@@ -80,24 +82,25 @@ Run the Step 1 command with `--set ingress.host=argus.example.com`, then open
 
 ### Example: OKD or OpenShift
 
-Use a hostname under your cluster's apps domain and point it at the apps/ingress floating
-IP reachable from your clients. For example, if the apps domain is `apps.cluster.example.com`
-and the apps/ingress IP is `198.51.100.20`, create this DNS A record. These are documentation
-examples; replace them with your own domain and IP:
+There is no ingress controller to install: the cluster's own router is one, and the chart
+selects its `openshift-default` class automatically. Use a hostname under the cluster's apps
+domain, which you can look up with:
 
-```text
-argus.apps.cluster.example.com.  A  198.51.100.20
+```bash
+kubectl -n openshift-ingress-operator get ingresscontroller default -o jsonpath='{.status.domain}{"\n"}'
 ```
 
-If your cluster already has wildcard DNS for `*.apps.cluster.example.com` pointing
-there, the hostname resolves already. Otherwise, create that A record or add this to your
-client machine's hosts file for a local trial:
+OpenShift needs wildcard DNS for `*.<apps domain>` pointing at its router, so a name such as
+`argus.apps.cluster.example.com` normally resolves already, with no DNS record to create. If your
+machine cannot resolve it (a lab without that DNS), add a hosts-file entry pointing it at the
+router's address: the ingress VIP on bare metal, OpenStack or vSphere, or the router's load
+balancer on a cloud. For example (documentation addresses; use your own):
 
 ```text
 198.51.100.20 argus.apps.cluster.example.com
 ```
 
-Install with that hostname, replacing the example domain and IP with your own:
+Install with that hostname:
 
 ```bash
 helm install argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.0 \
@@ -105,14 +108,41 @@ helm install argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --ve
   --set ingress.host=argus.apps.cluster.example.com
 ```
 
-OKD/OpenShift [creates a Route from the chart's Ingress automatically](https://docs.okd.io/4.21/networking/ingress_load_balancing/routes/creating-basic-routes.html).
-Once ready, open
-`http://argus.apps.cluster.example.com`. HTTPS uses the optional certificate settings
-above; an apps hostname alone does not enable it.
+The chart creates an ordinary Ingress. OpenShift
+[turns it into a Route](https://docs.okd.io/latest/networking/ingress_load_balancing/routes/creating-basic-routes.html)
+(`kubectl -n argus-system get route` shows it), and the router serves it. The router keeps
+WebSockets open, so the agent connections need no extra settings. Open
+`http://argus.apps.cluster.example.com` once the hub is ready.
+
+#### HTTPS with the cluster's own certificate
+
+The router already has a certificate for `*.<apps domain>`, so HTTPS needs neither cert-manager
+nor a Secret. Add these two options to the install command:
+
+```bash
+  --set 'ingress.annotations.route\.openshift\.io/termination=edge' \
+  --set publicApiUrl=https://argus.apps.cluster.example.com
+```
+
+The annotation makes the Route terminate TLS with the router's certificate and redirect HTTP to
+HTTPS. `publicApiUrl` tells the hub and its agents that the address is now `https://`. Without it,
+agents keep dialling `http://`, the router redirects them, and they cannot connect.
+
+On a new cluster the router's certificate is signed by the cluster's own CA. Browsers then show a
+warning, and agents in **other** clusters need that CA. Save it with:
+
+```bash
+kubectl -n openshift-config-managed get configmap default-ingress-cert \
+  -o jsonpath='{.data.ca-bundle\.crt}' > ingress-ca.pem
+```
+
+Pass it when you install each of those agents, with `--set-file hub.caBundle=ingress-ca.pem`. To
+avoid all of this, replace the router's default certificate with a trusted one
+([Replacing the default ingress certificate](https://docs.okd.io/latest/security/certificates/replacing-default-ingress-certificate.html)).
 
 In either example, a hosts-file entry applies only to that machine. Before connecting
 other clusters, make sure their agents can resolve the hostname through DNS and reach
-the ingress IP over the network.
+the router or ingress IP over the network.
 
 ### Check the installation
 
@@ -124,9 +154,9 @@ kubectl -n argus-system rollout status deploy/argus-hub --timeout=5m
 
 The agent connects by itself within a minute and appears on **Clusters** as `local`.
 Agents use the same address as the web interface, so there is no second port to open. The
-chart configures ingress-nginx to keep their connections open. With another controller or
-a load balancer in front of it, allow idle connections of at least 60 seconds; agents send
-a heartbeat every 30.
+chart configures ingress-nginx to keep their connections open, and the OpenShift router keeps
+them open by default. With another controller or a load balancer in front of it, allow idle
+connections of at least 60 seconds; agents send a heartbeat every 30.
 
 !!! note "Always pass `--version`"
     Each chart version always installs exactly the same software. A misspelt option stops the
@@ -139,20 +169,40 @@ Open `http://<your-hostname>` (or `https://<your-hostname>` if you enabled TLS),
 
 ## Step 3: Connect an AI model
 
-ARGUS uses an AI model to investigate incidents. Pick one:
+ARGUS uses an AI model to investigate incidents. Pick one route:
 
-- **A model behind an API** — any OpenAI-compatible endpoint, including a model you host
-  yourself. Add it in the web interface: see [Configure analysis](configure-analysis.md).
-  Nothing to install.
-- **Claude Code or Codex** — the hub runs these for you once you give it a credential, as below.
+| Route | What you need | Where you set it up |
+|---|---|---|
+| **A model behind an API** | Any OpenAI-compatible endpoint and its key, including a model you host yourself | Only in the web interface: go straight to [Configure analysis](configure-analysis.md). Nothing to install |
+| **Claude Code or Codex** | A credential for one of them | On the cluster first (below), then in the web interface |
 
 ### Claude Code or Codex
 
-The hub runs these for you; it needs only their credential. Neither has to be installed on the
-machine you run `helm` from.
+The hub runs the CLI for you in a separate *runner* pod; it only needs the credential. Neither
+CLI has to be installed on the machine you run `helm` from. There are five steps, in this
+order.
 
-Put the credential in a file there, without it showing on screen or in your shell history. The
-command asks you to paste it, and nothing appears as you paste:
+#### 1. Get the credential
+
+There are three kinds. **The first characters of the credential tell you which kind you have,
+and the kind decides the Helm option you use in step 3**: putting a credential in the wrong
+option is the most common reason the first investigation fails.
+
+| Kind | Starts with | How to get it | Use it for |
+|---|---|---|---|
+| Anthropic API key | `sk-ant-api03-` | [console.anthropic.com](https://console.anthropic.com/) → **API keys** → **Create key** | A team, and automatic investigation. Billed per use |
+| Claude subscription token (Pro or Max) | `sk-ant-oat01-` | On a machine with Claude Code (`npm install -g @anthropic-ai/claude-code`), run `claude setup-token`, sign in in the browser it opens, and copy the token it prints | Your own use only: Anthropic's [terms](https://code.claude.com/docs/en/legal-and-compliance) expect a plan to be used by the person who holds it, so don't share one across a team |
+| OpenAI API key (Codex) | `sk-` (often `sk-proj-`) | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) → **Create new secret key** | Codex |
+
+!!! warning "A subscription token is not an API key"
+    `claude setup-token` prints a token beginning `sk-ant-oat01-`. It goes in
+    `claudeCodeOauthToken`, never in `anthropicApiKey`. The chart recognises the two by their
+    prefix and stops the upgrade if they are swapped.
+
+#### 2. Save it to a file
+
+So that it never shows on screen or in your shell history. The command asks you to paste it,
+and nothing appears as you paste:
 
 ```bash
 mkdir -p ~/.argus && chmod 700 ~/.argus
@@ -160,45 +210,101 @@ printf 'Paste the credential, then press Enter: '; read -rs TOKEN; echo
 printf '%s' "$TOKEN" > ~/.argus/model-credential && unset TOKEN && chmod 600 ~/.argus/model-credential
 ```
 
-!!! info "How to get the credential"
-    On any machine with a browser:
+To check which kind you saved without printing it:
+`cut -c1-13 ~/.argus/model-credential` shows only the prefix.
 
-    - **Anthropic API key:** [console.anthropic.com](https://console.anthropic.com/) →
-      **API keys** → **Create key**. It starts `sk-ant-api03-`. Use this for a team, and for
-      automatic investigation.
-    - **Your own Claude subscription (Pro or Max), for your own use:** on a machine with
-      Claude Code (`npm install -g @anthropic-ai/claude-code`), run `claude setup-token`, sign
-      in in the browser it opens, and copy the token it prints. It starts `sk-ant-oat01-`.
-      Anthropic's [terms](https://code.claude.com/docs/en/legal-and-compliance) expect a plan to be used by the person who
-      holds it, so don't share one across a team.
-    - **Codex:** an OpenAI API key, from
-      [platform.openai.com/api-keys](https://platform.openai.com/api-keys) →
-      **Create new secret key**. It starts `sk-`.
+#### 3. Give it to the hub
 
-Then upgrade the hub with it. For an Anthropic API key:
+Use the tab matching the prefix from step 1:
+
+=== "Anthropic API key (sk-ant-api03-)"
+
+    ```bash
+    helm upgrade argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.0 \
+      -n argus-system --reset-then-reuse-values \
+      --set-file cliRunner.modelCredential.anthropicApiKey=$HOME/.argus/model-credential
+    ```
+
+=== "Claude subscription (sk-ant-oat01-)"
+
+    ```bash
+    helm upgrade argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.0 \
+      -n argus-system --reset-then-reuse-values \
+      --set-file cliRunner.modelCredential.claudeCodeOauthToken=$HOME/.argus/model-credential \
+      --set cliRunner.authMode=subscription
+    ```
+
+    `authMode=subscription` makes the cost of an investigation show as *not measured*, rather
+    than as a misleading $0.00.
+
+=== "OpenAI API key (Codex)"
+
+    ```bash
+    helm upgrade argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.0 \
+      -n argus-system --reset-then-reuse-values \
+      --set-file cliRunner.modelCredential.openaiApiKey=$HOME/.argus/model-credential
+    ```
+
+=== "A Secret you manage"
+
+    Create a Secret in `argus-system` with one key named `ANTHROPIC_API_KEY`,
+    `CLAUDE_CODE_OAUTH_TOKEN` or `OPENAI_API_KEY` (by the same prefix rule), then:
+
+    ```bash
+    helm upgrade argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.0 \
+      -n argus-system --reset-then-reuse-values \
+      --set cliRunner.modelCredential.existingSecret=<secret-name>
+    ```
+
+This adds the runner pod. Wait for it, then delete the file:
 
 ```bash
-helm upgrade argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.0 \
-  -n argus-system --reset-then-reuse-values \
-  --set-file cliRunner.modelCredential.anthropicApiKey=$HOME/.argus/model-credential
+kubectl -n argus-system rollout status deploy/argus-hub-cli-runner --timeout=5m
+rm ~/.argus/model-credential
 ```
 
-For the others, swap the `--set-file` option:
-
-| You have | Option |
-|---|---|
-| An Anthropic API key | `cliRunner.modelCredential.anthropicApiKey` |
-| Your own Claude subscription | `cliRunner.modelCredential.claudeCodeOauthToken`, plus `--set cliRunner.authMode=subscription` |
-| An OpenAI API key (Codex) | `cliRunner.modelCredential.openaiApiKey` |
-| The credential in a Secret already | `cliRunner.modelCredential.existingSecret`, with key `CLAUDE_CODE_OAUTH_TOKEN`, `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` |
-
-Once the upgrade is done, delete the file: `rm ~/.argus/model-credential`.
+If the runner or the hub stays `Pending`, the cluster has no CPU to spare for it: see
+[The hub does not start](../troubleshooting.md#the-hub-does-not-start-after-installing).
 
 !!! warning "Never pass a credential with plain `--set`"
     It would be saved in your shell history. Use `--set-file`, or a Secret.
 
-Then add a provider of kind **CLI**, with runner URL `http://argus-hub-cli-runner:8090`: see
-[Configure analysis](configure-analysis.md).
+#### 4. Add the provider in the web interface
+
+Go to **Settings → AI providers → Add a provider → Agent CLI**:
+
+| Field | Value |
+|---|---|
+| Runner URL | `http://argus-hub-cli-runner:8090` exactly (with a release name other than `argus-hub`: `http://<release>-cli-runner:8090`) |
+| Agent | `claude` for either Anthropic credential, `codex` for an OpenAI key |
+| Runner token | Leave blank: the hub already has it |
+
+The details, with screenshots, are in [Configure analysis](configure-analysis.md#agent-cli-runner).
+
+#### 5. Test it, then run one investigation
+
+**Test connection** proves the runner URL, the runner token and that the CLI is installed. It
+does **not** use the model credential. To prove that, open any incident and select
+**Investigate**: a completed analysis means everything works. If it fails with
+*Invalid API key*, the credential is in the wrong option: see
+[Analysis fails immediately](../troubleshooting.md#analysis-fails-immediately).
+
+### Changing the credential later
+
+Run step 3 again with the new credential's option, **and clear the option you used before**, or
+`--reset-then-reuse-values` keeps it. For example, moving from an API key to a subscription
+token:
+
+```bash
+helm upgrade argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.0 \
+  -n argus-system --reset-then-reuse-values \
+  --set cliRunner.modelCredential.anthropicApiKey= \
+  --set-file cliRunner.modelCredential.claudeCodeOauthToken=$HOME/.argus/model-credential \
+  --set cliRunner.authMode=subscription
+```
+
+If you swap them by mistake (a subscription token in `anthropicApiKey`, or an API key in
+`claudeCodeOauthToken`), the upgrade stops and names the option to use instead.
 
 ## Step 4: Add your other clusters
 
