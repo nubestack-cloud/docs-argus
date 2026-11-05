@@ -30,7 +30,7 @@ The **Enroll a cluster** dialog shows the exact commands, with the hub's address
 and the token already filled in, ready to copy. Run them against the cluster you want watched:
 
 ![The generated commands: create the argus-system namespace, put the token in a Secret, and helm
-install the agent chart at version 0.2.0 with the hub's address](../assets/images/50-enroll-command.png){ width="480" }
+install the agent chart at version 0.2.1 with the hub's address](../assets/images/50-enroll-command.png){ width="480" }
 
 *The commands as the dialog shows them; the token is shortened here. **Copy** takes the whole
 block.*

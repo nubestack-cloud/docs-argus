@@ -32,7 +32,7 @@ See [Requirements](requirements.md) for the full list.
 Replace `argus.example.com` with your hostname. This is the only value you need to set:
 
 ```bash
-helm install argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.0 \
+helm install argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.1 \
   -n argus-system --create-namespace \
   --set ingress.host=argus.example.com
 ```
@@ -103,7 +103,7 @@ balancer on a cloud. For example (documentation addresses; use your own):
 Install with that hostname:
 
 ```bash
-helm install argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.0 \
+helm install argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.1 \
   -n argus-system --create-namespace \
   --set ingress.host=argus.apps.cluster.example.com
 ```
@@ -220,7 +220,7 @@ Use the tab matching the prefix from step 1:
 === "Anthropic API key (sk-ant-api03-)"
 
     ```bash
-    helm upgrade argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.0 \
+    helm upgrade argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.1 \
       -n argus-system --reset-then-reuse-values \
       --set-file cliRunner.modelCredential.anthropicApiKey=$HOME/.argus/model-credential
     ```
@@ -228,7 +228,7 @@ Use the tab matching the prefix from step 1:
 === "Claude subscription (sk-ant-oat01-)"
 
     ```bash
-    helm upgrade argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.0 \
+    helm upgrade argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.1 \
       -n argus-system --reset-then-reuse-values \
       --set-file cliRunner.modelCredential.claudeCodeOauthToken=$HOME/.argus/model-credential \
       --set cliRunner.authMode=subscription
@@ -240,7 +240,7 @@ Use the tab matching the prefix from step 1:
 === "OpenAI API key (Codex)"
 
     ```bash
-    helm upgrade argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.0 \
+    helm upgrade argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.1 \
       -n argus-system --reset-then-reuse-values \
       --set-file cliRunner.modelCredential.openaiApiKey=$HOME/.argus/model-credential
     ```
@@ -251,7 +251,7 @@ Use the tab matching the prefix from step 1:
     `CLAUDE_CODE_OAUTH_TOKEN` or `OPENAI_API_KEY` (by the same prefix rule), then:
 
     ```bash
-    helm upgrade argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.0 \
+    helm upgrade argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.1 \
       -n argus-system --reset-then-reuse-values \
       --set cliRunner.modelCredential.existingSecret=<secret-name>
     ```
@@ -296,7 +296,7 @@ Run step 3 again with the new credential's option, **and clear the option you us
 token:
 
 ```bash
-helm upgrade argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.0 \
+helm upgrade argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.1 \
   -n argus-system --reset-then-reuse-values \
   --set cliRunner.modelCredential.anthropicApiKey= \
   --set-file cliRunner.modelCredential.claudeCodeOauthToken=$HOME/.argus/model-credential \
@@ -330,7 +330,7 @@ Open `http://localhost:8080`. The hub watches its own cluster; other clusters ca
 Attach the hub to a Gateway you run, instead of setting `ingress.host`:
 
 ```bash
-helm install argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.0 \
+helm install argus-hub oci://registry-1.docker.io/nubestack/argus-hub-chart --version 0.2.1 \
   -n argus-system --create-namespace \
   --set httpRoute.host=argus.example.com \
   --set 'httpRoute.parentRefs[0].name=<gateway>' \
